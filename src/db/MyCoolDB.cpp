@@ -7,8 +7,6 @@
 #include "structures/Table.h"
 #include "../parser/Parser.h"
 
-#include <sstream>
-
 std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
   Lexer lexer(request);
   std::vector<QueryResult> result;
@@ -20,16 +18,44 @@ std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
         break;
       }
 
-      if (token.value == "CREATE") {
+      if (token.value == CREATE) {
         token = lexer.GetNextToken();
-        if (token.value == "TABLE") {
+        if (token.value == TABLE) {
           Table table = parser.ParseCreateTable(lexer);
           tables_.push_back(table);
           result.emplace_back(true, std::vector<Row>(), table.columns);
         }
-      } else {
+      }
+
+      else if (token.value == DROP) {
+        token = lexer.GetNextToken();
+        if (token.value == TABLE) {
+          DropTable(lexer);
+        }
+      }
+
+      else {
         throw SQLError(SYNTAX_ERROR);
       }
   }
   return result;
+}
+void MyCoolDB::DropTable(Lexer& lexer) {
+  Token token = lexer.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+
+  bool deleted = std::erase_if(tables_, [&token](Table& table){
+    return table.name == token.value;
+  });
+
+  if (!deleted) {
+    throw SQLError(TABLE_NOT_FOUND);
+  }
+
+  token = lexer.GetNextToken();
+  if (token.type != TOKEN_SEMI) throw SQLError(SYNTAX_ERROR);
+}
+
+const std::vector<Table>& MyCoolDB::GetTables() const {
+  return tables_;
 }

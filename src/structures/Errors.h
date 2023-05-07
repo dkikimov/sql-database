@@ -7,7 +7,8 @@
 
 enum ErrorTypes {
   SYNTAX_ERROR,
-  UNKNOWN_DATA_TYPE
+  UNKNOWN_DATA_TYPE,
+  TABLE_NOT_FOUND
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -16,6 +17,8 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Invalid command";
     case UNKNOWN_DATA_TYPE:
       return "Unknown data type";
+    case TABLE_NOT_FOUND:
+      return "Table not found";
   }
 };
 

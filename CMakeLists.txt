@@ -1,11 +1,10 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.23)
 project(labwork_12_KatsuShooter)
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_subdirectory(bin)
 add_subdirectory(src)
 
-add_executable(labwork_12_KatsuShooter
-        main.cpp)
-
-target_link_libraries(labwork_12_KatsuShooter PUBLIC MyCoolDB)
+enable_testing()
+add_subdirectory(tests)
