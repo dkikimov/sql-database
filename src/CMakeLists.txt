@@ -1,0 +1,1 @@
+add_library(MyCoolDB db/MyCoolDB.h db/MyCoolDB.cpp db/Row.h db/Row.cpp structures/DataTypes.h db/QueryResult.h structures/Constants.h parser/Parser.cpp parser/Parser.h db/structures/Table.h db/structures/Table.h db/structures/Columns.h structures/Attributes.h lexer/Token.h lexer/Token.cpp lexer/Lexer.cpp lexer/Lexer.h structures/Errors.h)

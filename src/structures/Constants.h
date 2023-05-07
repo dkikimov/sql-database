@@ -1,0 +1,11 @@
+//
+// Created by Даник 💪 on 06.05.2023.
+//
+
+#ifndef LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_
+#define LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_
+
+auto CREATE = "CREATE";
+auto TABLE = "TABLE";
+
+#endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_
