@@ -7,5 +7,6 @@
 
 auto CREATE = "CREATE";
 auto TABLE = "TABLE";
+auto DROP = "DROP";
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_

@@ -15,8 +15,11 @@ class MyCoolDB {
   MyCoolDB() = default;
 
   std::vector<QueryResult> ExecuteCommand(const char* request);
+  const std::vector<Table>& GetTables() const;
  private:
   std::vector<Table> tables_;
+
+  void DropTable(Lexer& lexer);
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_
