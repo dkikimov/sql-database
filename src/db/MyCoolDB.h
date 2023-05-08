@@ -19,7 +19,7 @@ class MyCoolDB {
  private:
   std::vector<Table> tables_;
 
-  void DropTable(Lexer& lexer);
+  void DropTable(const std::string& table_name);
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_

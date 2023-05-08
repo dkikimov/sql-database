@@ -11,13 +11,15 @@
 
 class Parser {
  public:
-  Parser() = default;
+  Parser(Lexer& lexer);
 
 
-  Table ParseCreateTable(Lexer& lexer);
+  Table ParseCreateTable();
+  std::string ParseDropTable();
  private:
-
-  std::vector<Column> ParseColumns(Lexer& lexer);
+  void ExpectSemicolon();
+  std::vector<Column> ParseColumns();
+  Lexer& lexer_;
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_PARSER_H_

@@ -3,41 +3,43 @@
 //
 
 #include "Parser.h"
-#include "../structures/Errors.h"
-Table Parser::ParseCreateTable(Lexer& lexer) {
+Parser::Parser(Lexer& lexer): lexer_(lexer) {}
+
+Table Parser::ParseCreateTable() {
   Table result;
 
-  Token token = lexer.GetNextToken();
+  Token token = lexer_.GetNextToken();
 
   if (token.type != TOKEN_KEYWORD) {
     throw SQLError(SYNTAX_ERROR);
   }
 
   result.name = token.value;
-  token = lexer.GetNextToken();
+  token = lexer_.GetNextToken();
 
   if (token.type != TokenTypes::TOKEN_LBRACE) {
     throw SQLError(SYNTAX_ERROR);
   }
-  result.columns = ParseColumns(lexer);
-
+  result.columns = ParseColumns();
   return result;
 }
-std::vector<Column> Parser::ParseColumns(Lexer& lexer) {
+
+std::vector<Column> Parser::ParseColumns() {
   std::vector<Column> result;
   while (true) {
     Column column;
-    Token token = lexer.GetNextToken();
+    Token token = lexer_.GetNextToken();
 
     if (token.type == TOKEN_SEMI) {
       break;
     }
+
     if (token.type != TOKEN_KEYWORD) {
       throw SQLError(SYNTAX_ERROR);
     }
 
     column.name = token.value;
-    token = lexer.GetNextToken();
+    token = lexer_.GetNextToken();
 
     if (token.type != TOKEN_KEYWORD) {
       throw SQLError(SYNTAX_ERROR);
@@ -45,7 +47,7 @@ std::vector<Column> Parser::ParseColumns(Lexer& lexer) {
 
     column.type = DataTypeFromString(token.value);
     while (true) {
-      token = lexer.GetNextToken();
+      token = lexer_.GetNextToken();
       if (token.type == TOKEN_COMMA || token.type == TOKEN_RBRACE) break;
 
       if (token.type != TOKEN_KEYWORD) {
@@ -53,32 +55,45 @@ std::vector<Column> Parser::ParseColumns(Lexer& lexer) {
       }
 
       if (token.value == "PRIMARY") {
-        token = lexer.GetNextToken();
-        if (token.type != TOKEN_KEYWORD) {
-          throw SQLError(SYNTAX_ERROR);
-        }
+        token = lexer_.GetNextToken();
         if (token.value == "KEY") {
           column.attributes.push_back(PRIMARY_KEY);
+        } else {
+          throw SQLError(SYNTAX_ERROR);
         }
       } else if (token.value == "FOREIGN") {
-        token = lexer.GetNextToken();
-        if (token.type != TOKEN_KEYWORD) {
-          throw SQLError(SYNTAX_ERROR);
-        }
+        token = lexer_.GetNextToken();
         if (token.value == "KEY") {
           column.attributes.push_back(FOREIGN_KEY);
-        }
-      } else if (token.value == "NOT") {
-        token = lexer.GetNextToken();
-        if (token.type != TOKEN_KEYWORD) {
+        } else {
           throw SQLError(SYNTAX_ERROR);
         }
+      } else if (token.value == "NOT") {
+        token = lexer_.GetNextToken();
         if (token.value == "NULL") {
           column.attributes.push_back(NOT_NULL);
+        }
+        else {
+          throw SQLError(SYNTAX_ERROR);
         }
       }
     }
     result.push_back(column);
   }
   return result;
+}
+
+std::string Parser::ParseDropTable() {
+  Token token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) {
+    throw SQLError(SYNTAX_ERROR);
+  }
+
+  ExpectSemicolon();
+  return token.value;
+}
+
+void Parser::ExpectSemicolon() {
+  Token token = lexer_.GetNextToken();
+  if (token.type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
 }

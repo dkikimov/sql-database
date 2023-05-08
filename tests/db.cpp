@@ -5,6 +5,13 @@
 #include "gtest/gtest.h"
 #include "src/db/MyCoolDB.h"
 
+MyCoolDB CreateDefaultTable() {
+  MyCoolDB db;
+
+  db.ExecuteCommand("CREATE TABLE table_name (id INT PRIMARY KEY, name VARCHAR NOT NULL);");
+  return db;
+}
+
 TEST(DB, CreateTable) {
   MyCoolDB db;
 
@@ -21,4 +28,11 @@ TEST(DB, CreateTable) {
 
   ASSERT_EQ(e[0].columns, columns);
   ASSERT_EQ(db.GetTables()[0].columns, columns);
+}
+
+TEST(DB, DropTable) {
+  MyCoolDB db = CreateDefaultTable();
+
+  db.ExecuteCommand("DROP TABLE table_name;");
+  ASSERT_EQ(db.GetTables().size(), 0);
 }
