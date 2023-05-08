@@ -8,14 +8,18 @@
 #include <sstream>
 #include "../db/structures/Table.h"
 #include "../lexer/Lexer.h"
+#include "../db/structures/commands/SelectFromModel.h"
+#include "../db/structures/commands/InsertIntoModel.h"
 
 class Parser {
  public:
-  Parser(Lexer& lexer);
-
+  explicit Parser(Lexer& lexer);
 
   Table ParseCreateTable();
   std::string ParseDropTable();
+  SelectFromModel ParseSelectFrom();
+  InsertIntoModel ParseInsertInto();
+
  private:
   void ExpectSemicolon();
   std::vector<Column> ParseColumns();

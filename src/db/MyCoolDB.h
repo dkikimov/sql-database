@@ -6,9 +6,10 @@
 #define LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_
 
 #include <vector>
-#include "QueryResult.h"
+#include "structures/QueryResult.h"
 #include "../lexer/Lexer.h"
 #include "structures/Table.h"
+#include "structures/commands/SelectFromModel.h"
 
 class MyCoolDB {
  public:
@@ -20,6 +21,7 @@ class MyCoolDB {
   std::vector<Table> tables_;
 
   void DropTable(const std::string& table_name);
+  QueryResult SelectFrom(SelectFromModel& select_from);
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_

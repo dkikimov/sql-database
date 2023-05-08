@@ -5,8 +5,13 @@
 #ifndef LABWORK_12_KATSUSHOOTER_SRC_ROW_H_
 #define LABWORK_12_KATSUSHOOTER_SRC_ROW_H_
 
+#include <vector>
+
 class Row {
  public:
+  std::vector<union {
+                int intData;
+              }> data;
   Row() {
 
   }

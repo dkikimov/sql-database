@@ -13,7 +13,6 @@
 
 class Column {
  public:
-
   Column(): type(Int) {};
   explicit Column(std::string name, const std::vector<Attributes>& attributes, DataTypes type)
       : name(std::move(name)), attributes(attributes), type(type) {

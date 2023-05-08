@@ -5,7 +5,7 @@
 #ifndef LABWORK_12_KATSUSHOOTER_SRC_QUERYRESULT_H_
 #define LABWORK_12_KATSUSHOOTER_SRC_QUERYRESULT_H_
 #include "Row.h"
-#include "structures/Columns.h"
+#include "Column.h"
 
 #include <vector>
 

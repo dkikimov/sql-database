@@ -3,6 +3,7 @@
 //
 
 #include "Parser.h"
+#include "../structures/Constants.h"
 Parser::Parser(Lexer& lexer): lexer_(lexer) {}
 
 Table Parser::ParseCreateTable() {
@@ -96,4 +97,33 @@ std::string Parser::ParseDropTable() {
 void Parser::ExpectSemicolon() {
   Token token = lexer_.GetNextToken();
   if (token.type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
+}
+
+SelectFromModel Parser::ParseSelectFrom() {
+  SelectFromModel result;
+  while (true) {
+    Token token = lexer_.GetNextToken();
+    if (token.value == ALL) {
+      result.select_all_columns = true;
+      break;
+    }
+
+    result.columns.push_back(token.value);
+
+    token = lexer_.GetNextToken();
+    if (token.type != TOKEN_COMMA) break;
+  }
+
+  Token token = lexer_.GetNextToken();
+  if (token.value != FROM) throw SQLError(SYNTAX_ERROR);
+
+  token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+
+  result.table_name = token.value;
+  return result;
+}
+InsertIntoModel Parser::ParseInsertInto() {
+  InsertIntoModel result;
+  return InsertIntoModel();
 }

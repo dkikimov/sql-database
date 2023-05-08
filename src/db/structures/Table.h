@@ -6,11 +6,12 @@
 #define LABWORK_12_KATSUSHOOTER_SRC_STRUCTURES_TABLE_H_
 
 #include <string>
-#include "Columns.h"
+#include "Column.h"
 
 struct Table {
   std::string name;
   std::vector<Column> columns;
+  std::vector<Row> rows;
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_STRUCTURES_TABLE_H_
