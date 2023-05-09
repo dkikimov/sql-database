@@ -38,14 +38,14 @@ std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
 
       else if (token.value == SELECT) {
         SelectFromModel data = parser.ParseSelectFrom();
-
+        result.push_back(SelectFrom(data));
       }
 
       else if (token.value == INSERT) {
         token = lexer.GetNextToken();
         if (token.value == INTO) {
-          const std::string table_name = parser.ParseDropTable();
-          DropTable(table_name);
+          InsertIntoModel data = parser.ParseInsertInto(tables_);
+          InsertInto(data);
         }
       }
 
@@ -70,19 +70,35 @@ const std::vector<Table>& MyCoolDB::GetTables() const {
 }
 
 QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
-  auto table_iter = std::find_if(tables_.begin(), tables_.end(), [&select_from](Table& table) {
-    return table.name == select_from.table_name;
-  });
-  if (table_iter == std::end(tables_)) {
-    throw SQLError(TABLE_NOT_FOUND);
-  }
-
-  Table& table = *table_iter;
+  Table& table = FindTableByName(tables_, select_from.table_name);
   if (select_from.select_all_columns) {
     return {true, table.rows, table.columns};
   }
 
-  auto columns_id = FindIndexesOfElement(table.columns, select_from.columns);
-  //TODO:
-//  QueryResult result;
+  auto columns = FindColumnsByName(table.columns, select_from.columns);
+
+  std::vector<Row> added_rows;
+  added_rows.reserve(table.rows.size());
+
+  for (Row& row: table.rows) {
+    Row changed_row;
+    for (auto column_id: columns.second) {
+      changed_row.fields.push_back(row.fields[column_id]);
+    }
+    added_rows.push_back(changed_row);
+  }
+
+  return {true, added_rows, columns.first};
 }
+
+
+void MyCoolDB::InsertInto(InsertIntoModel& insert_into_model) {
+  Table& table = FindTableByName(tables_, insert_into_model.table_name);
+
+  table.rows.insert(
+      table.rows.end(),
+      std::make_move_iterator(insert_into_model.rows.begin()),
+      std::make_move_iterator(insert_into_model.rows.end())
+  );
+}
+

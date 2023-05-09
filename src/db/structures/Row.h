@@ -6,15 +6,11 @@
 #define LABWORK_12_KATSUSHOOTER_SRC_ROW_H_
 
 #include <vector>
+#include <string>
+#include "../../structures/DataTypes.h"
 
-class Row {
- public:
-  std::vector<union {
-                int intData;
-              }> data;
-  Row() {
-
-  }
+struct Row {
+  std::vector<possible_data_types> fields;
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_ROW_H_

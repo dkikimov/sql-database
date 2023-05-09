@@ -10,6 +10,7 @@
 #include "../lexer/Lexer.h"
 #include "structures/Table.h"
 #include "structures/commands/SelectFromModel.h"
+#include "structures/commands/InsertIntoModel.h"
 
 class MyCoolDB {
  public:
@@ -22,6 +23,7 @@ class MyCoolDB {
 
   void DropTable(const std::string& table_name);
   QueryResult SelectFrom(SelectFromModel& select_from);
+  void InsertInto(InsertIntoModel& insert_into_model);
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_

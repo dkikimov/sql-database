@@ -8,10 +8,12 @@
 const auto CREATE = "CREATE";
 const auto TABLE = "TABLE";
 const auto DROP = "DROP";
-const auto SELECT = "DROP";
-const auto FROM = "DROP";
+const auto SELECT = "SELECT";
+const auto FROM = "FROM";
 const auto ALL = "*";
 const auto INSERT = "INSERT";
 const auto INTO = "INTO";
+const auto VALUES = "VALUES";
+const auto WHERE = "WHERE";
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_

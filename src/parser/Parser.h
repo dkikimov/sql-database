@@ -18,11 +18,15 @@ class Parser {
   Table ParseCreateTable();
   std::string ParseDropTable();
   SelectFromModel ParseSelectFrom();
-  InsertIntoModel ParseInsertInto();
+  InsertIntoModel ParseInsertInto(std::vector<Table>& tables);
 
  private:
   void ExpectSemicolon();
   std::vector<Column> ParseColumns();
+  std::vector<Row> ParseRows(std::vector<Column>& columns);
+  Row ParseRow(std::vector<Column>& columns);
+  void ParseWhereCondition(SelectFromModel& select_from_model);
+
   Lexer& lexer_;
 };
 

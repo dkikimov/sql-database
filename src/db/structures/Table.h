@@ -7,6 +7,7 @@
 
 #include <string>
 #include "Column.h"
+#include "Row.h"
 
 struct Table {
   std::string name;

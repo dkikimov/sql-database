@@ -53,6 +53,8 @@ Token Lexer::ParseToken() {
 }
 Token Lexer::ParseString() {
   std::string token;
+
+  NextChar();
   while (character != '\'') {
     token += character;
     NextChar();

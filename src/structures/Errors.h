@@ -10,6 +10,9 @@ enum ErrorTypes {
   SEMI_MISSED,
   UNKNOWN_DATA_TYPE,
   TABLE_NOT_FOUND,
+  COLUMN_NOT_FOUND,
+  MISMATCHED_DATA_TYPE,
+  UNKNOWN_CONDITION
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -22,6 +25,12 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Table not found";
     case SEMI_MISSED:
       return "Semicolon expected";
+    case COLUMN_NOT_FOUND:
+      return "Column not found";
+    case MISMATCHED_DATA_TYPE:
+      return "Type of fields are mismatched";
+    case UNKNOWN_CONDITION:
+      return "Unknown condition";
   }
 };
 

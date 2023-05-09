@@ -35,4 +35,6 @@ static DataTypes DataTypeFromString(std::string& string) {
   throw SQLError(UNKNOWN_DATA_TYPE);
 }
 
+typedef std::variant<int, float, bool, std::string, double> possible_data_types;
+
 #endif //LABWORK_12_KATSUSHOOTER_SRC_DATATYPES_H_

@@ -15,7 +15,13 @@ int main() {
 
   MyCoolDB db;
 
-  auto e = db.ExecuteCommand("CREATE TABLE table_name (id INT PRIMARY KEY, name VARCHAR NOT NULL);");
+  Lexer lexer("INSERT INTO table_name VALUES (1, 'toy');");
+  while (true) {
+    Token token = lexer.GetNextToken();
+    if (token.type == TOKEN_END) break;
+    std::cout << token.value << '\n';
+  }
+//  auto e = db.ExecuteCommand("CREATE TABLE table_name (id INT PRIMARY KEY, name VARCHAR NOT NULL);");
 
   return 0;
 }
