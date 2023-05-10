@@ -1,22 +1,11 @@
 //
 // Created by Даник 💪 on 08.05.2023.
 //
-#include <vector>
 #include "structures/Column.h"
 #include "structures/Table.h"
-static std::vector<size_t> FindIndexesOfColumns(const std::vector<Column>& columns,
-                                                const std::vector<std::string>& columns_to_select) {
-  std::vector<size_t> result;
-  result.reserve(columns_to_select.size());
-  for (auto& el : columns_to_select) {
-    auto itr = std::find_if(columns.cbegin(), columns.cend(), [&el](const Column& column) {
-      return column.name == el;
-    });
-    result.push_back(std::distance(columns.begin(), itr));
-  }
 
-  return result;
-}
+#include <vector>
+#include <map>
 
 static std::pair<std::vector<Column>, std::vector<size_t>> FindColumnsByName(const std::vector<Column>& columns,
                                                 const std::vector<std::string>& columns_to_select) {
@@ -32,6 +21,17 @@ static std::pair<std::vector<Column>, std::vector<size_t>> FindColumnsByName(con
 
     result.first.emplace_back(*itr);
     result.second.emplace_back(std::distance(columns.begin(), itr));
+  }
+
+  return result;
+}
+
+// Returns map where key is name and value is a pair of column with this name and it's index.
+static std::map<std::string, std::pair<Column, size_t>> GetMapOfColumnsIndexByName(const std::vector<Column>& columns) {
+  std::map<std::string, std::pair<Column, size_t>> result;
+
+  for (size_t i = 0; i < columns.size(); ++i) {
+    result.insert({columns[i].name, std::make_pair(columns[i], i)});
   }
 
   return result;

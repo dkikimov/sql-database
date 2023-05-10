@@ -12,7 +12,8 @@ enum ErrorTypes {
   TABLE_NOT_FOUND,
   COLUMN_NOT_FOUND,
   MISMATCHED_DATA_TYPE,
-  UNKNOWN_CONDITION
+  UNKNOWN_CONDITION,
+  UNKNOWN_COMPARISON_OPERATOR
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -31,6 +32,8 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Type of fields are mismatched";
     case UNKNOWN_CONDITION:
       return "Unknown condition";
+    case UNKNOWN_COMPARISON_OPERATOR:
+      return "Unknown comparison operator";
   }
 };
 

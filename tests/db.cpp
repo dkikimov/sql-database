@@ -16,6 +16,10 @@ void InsertIntoTable(MyCoolDB& db) {
   db.ExecuteCommand("INSERT INTO table_name VALUES (1, 'toy');");
 }
 
+void InsertMultipleValuesIntoTable(MyCoolDB& db) {
+  db.ExecuteCommand("INSERT INTO table_name VALUES (1, 'toy'), (2, 'phone');");
+}
+
 TEST(DB_ManagingTables, CreateTable) {
   MyCoolDB db;
 
@@ -43,16 +47,30 @@ TEST(DB_ManagingTables, DropTable) {
 
 TEST(DB_ModifyingData, InsertIntoTable) {
   MyCoolDB db = CreateDefaultTable();
-
   InsertIntoTable(db);
-  ASSERT_EQ(db.GetTables()[0].rows.size(), 1);
+
+  std::vector<Row> expected_rows {
+      Row({1, "toy"})
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
 }
 
-TEST(DB_SelectFrom, All_Columns) {
+TEST(DB_ModifyingData, InsertIntoTableMultipleValues) {
+  MyCoolDB db = CreateDefaultTable();
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows {
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, AllColumns) {
   MyCoolDB db = CreateDefaultTable();
 
   InsertIntoTable(db);
-  std::vector<QueryResult> result = db.ExecuteCommand("SELECT * FROM table_name");
+  std::vector<QueryResult> result = db.ExecuteCommand("SELECT * FROM table_name;");
 
   ASSERT_EQ(result.size(), 1);
 
@@ -65,11 +83,11 @@ TEST(DB_SelectFrom, All_Columns) {
 
 }
 
-TEST(DB_SelectFrom, One_Column) {
+TEST(DB_SelectFrom, OneColumn) {
   MyCoolDB db = CreateDefaultTable();
 
   InsertIntoTable(db);
-  std::vector<QueryResult> result = db.ExecuteCommand("SELECT id FROM table_name");
+  std::vector<QueryResult> result = db.ExecuteCommand("SELECT id FROM table_name;");
 
   ASSERT_EQ(result.size(), 1);
 
@@ -85,3 +103,31 @@ TEST(DB_SelectFrom, One_Column) {
   ASSERT_EQ(result[0].columns, expected_columns);
 }
 
+TEST(DB_SelectFrom, WhereCondition_And) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows {
+      Row({1, "toy"})
+  };
+
+  std::vector<QueryResult> result = db.ExecuteCommand("SELECT * FROM table_name WHERE id = 1 AND name = 'toy';");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_Or) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows {
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult> result = db.ExecuteCommand("SELECT * FROM table_name WHERE id = 1 OR name = 'phone';");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}

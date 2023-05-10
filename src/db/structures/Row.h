@@ -10,6 +10,16 @@
 #include "../../structures/DataTypes.h"
 
 struct Row {
+  explicit Row(const std::vector<possible_data_types>& fields) : fields(fields) {}
+  Row() = default;
+
+  bool operator==(const Row& rhs) const {
+    return fields == rhs.fields;
+  }
+  bool operator!=(const Row& rhs) const {
+    return !(rhs == *this);
+  }
+
   std::vector<possible_data_types> fields;
 };
 

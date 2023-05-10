@@ -8,11 +8,48 @@
 #include <string>
 #include <vector>
 
+enum ComparisonOperator {
+  COMPARISON_EQUALS,
+  COMPARISON_BIGGER,
+  COMPARISON_BIGGER_EQUALS,
+  COMPARISON_SMALLER,
+  COMPARISON_SMALLER_EQUALS,
+  COMPARISON_NOT_EQUALS,
+  COMPARISON_IS,
+  COMPARISON_IS_NULL,
+  COMPARISON_IS_NOT_NULL,
+};
+
+static ComparisonOperator GetComparisonOperatorFromString(std::string& string) {
+  if (string == "=") {
+    return COMPARISON_EQUALS;
+  } else if (string == "!=") {
+    return COMPARISON_NOT_EQUALS;
+  } else if (string == ">") {
+    return COMPARISON_BIGGER;
+  } else if (string == ">=") {
+    return COMPARISON_BIGGER_EQUALS;
+  } else if (string == "<") {
+    return COMPARISON_SMALLER;
+  } else if (string == "<=") {
+    return COMPARISON_SMALLER_EQUALS;
+  }  else if (string == "IS") {
+    return COMPARISON_IS;
+  } else if (string == "IS NULL") {
+    return COMPARISON_IS_NULL;
+  } else if (string == "IS NOT NULL") {
+    return COMPARISON_IS_NOT_NULL;
+  }
+
+  else {
+    throw SQLError(UNKNOWN_COMPARISON_OPERATOR);
+  }
+}
+
 enum ConditionTypes {
   CONDITION_AND,
   CONDITION_OR,
-  CONDITION_IS,
-  CONDITION_NULL,
+  CONDITION_BRACE
 };
 
 static ConditionTypes GetConditionFromString(std::string& string) {
@@ -20,11 +57,8 @@ static ConditionTypes GetConditionFromString(std::string& string) {
     return CONDITION_AND;
   } else if (string == "OR") {
     return CONDITION_OR;
-  } else if (string == "IS") {
-    return CONDITION_IS;
-  } else if (string == "NULL") {
-    return CONDITION_NULL;
   }
+
   else {
     throw SQLError(UNKNOWN_CONDITION);
   }
@@ -33,20 +67,12 @@ static ConditionTypes GetConditionFromString(std::string& string) {
 struct Operand {
   std::string field;
   std::string value;
+  ComparisonOperator comparison_operator;
 };
 
-class Condition {
- public:
-  virtual void AddOperand(Operand& operand) {};
- private:
-
-  std::vector<Operand> operands_;
-};
-
-class AndCondition {
- public:
-
- private:
+struct Condition {
+  ConditionTypes type;
+  std::vector<Operand> operands;
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_DB_STRUCTURES_COMMANDS_CONDITION_H_

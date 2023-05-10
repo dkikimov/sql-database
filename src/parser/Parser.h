@@ -5,11 +5,12 @@
 #ifndef LABWORK_12_KATSUSHOOTER_SRC_PARSER_H_
 #define LABWORK_12_KATSUSHOOTER_SRC_PARSER_H_
 
-#include <sstream>
 #include "../db/structures/Table.h"
 #include "../lexer/Lexer.h"
 #include "../db/structures/commands/SelectFromModel.h"
 #include "../db/structures/commands/InsertIntoModel.h"
+
+#include <stack>
 
 class Parser {
  public:
@@ -25,7 +26,12 @@ class Parser {
   std::vector<Column> ParseColumns();
   std::vector<Row> ParseRows(std::vector<Column>& columns);
   Row ParseRow(std::vector<Column>& columns);
+
   void ParseWhereCondition(SelectFromModel& select_from_model);
+  static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);
+
+  Operand ParseOperand(std::string& field_name);
+
 
   Lexer& lexer_;
 };
