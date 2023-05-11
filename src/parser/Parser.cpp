@@ -191,7 +191,7 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
   while (true){
     Token token = lexer_.GetNextToken();
     if (token.type == TOKEN_SEMI) break;
-    if (token.type == TOKEN_LBRACE) {
+    else if (token.type == TOKEN_LBRACE) {
       conditions.push(CONDITION_BRACE);
     } else if (token.type == TOKEN_RBRACE) {
       while (conditions.top() != CONDITION_BRACE) {
@@ -199,15 +199,7 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
         conditions.pop();
       }
       conditions.pop();
-    }
-
-    if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
-    Operand operand = ParseOperand(token.value);
-    stack_operand.push({operand});
-
-    token = lexer_.GetNextToken();
-    if (token.type == TOKEN_SEMI) break;
-    if (token.value == "AND") {
+    } else if (token.value == "AND") {
       while (!conditions.empty() && conditions.top() == CONDITION_OR) {
         MergeOperandsBasedOnCondition(stack_operand, conditions.top());
         conditions.pop();
@@ -216,6 +208,11 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
     } else if (token.value == "OR") {
       conditions.push(CONDITION_OR);
     }
+    else if (token.type == TOKEN_KEYWORD) {
+      Operand operand = ParseOperand(token.value);
+      stack_operand.push({operand});
+    }
+    else if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
   }
 
   while (!conditions.empty()) {
