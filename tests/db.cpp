@@ -66,6 +66,23 @@ TEST(DB_ModifyingData, InsertIntoTableMultipleValues) {
   ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
 }
 
+TEST(DB_ModifyingData, InsertOnlyOneColumn) {
+  MyCoolDB db = CreateDefaultTable();
+
+  db.ExecuteCommand("INSERT INTO table_name(name) VALUES ('toy');");
+
+  std::vector<Row> expected_rows{
+      Row({Null(), "toy"}),
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}
+
+TEST(DB_ModifyingData, InsertOnlyOneNotNullableColumn) {
+  MyCoolDB db = CreateDefaultTable();
+
+  ASSERT_THROW(db.ExecuteCommand("INSERT INTO table_name(id) VALUES (1);"), SQLError);
+}
+
 TEST(DB_SelectFrom, AllColumns) {
   MyCoolDB db = CreateDefaultTable();
 

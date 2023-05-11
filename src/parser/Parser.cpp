@@ -25,11 +25,11 @@ Table Parser::ParseCreateTable() {
   if (token.type != TokenTypes::TOKEN_LBRACE) {
     throw SQLError(SYNTAX_ERROR);
   }
-  result.columns = ParseColumns();
+  result.columns = ParseCreateTableColumns();
   return result;
 }
 
-std::vector<Column> Parser::ParseColumns() {
+std::vector<Column> Parser::ParseCreateTableColumns() {
   std::vector<Column> result;
   while (true) {
     Column column;
@@ -139,26 +139,45 @@ InsertIntoModel Parser::ParseInsertInto(std::vector<Table>& tables) {
   InsertIntoModel result;
 
   Token token = lexer_.GetNextToken();
+
+  bool parse_columns = false;
+  std::vector<std::string> columns_name;
+  std::pair<std::vector<Column>, std::vector<size_t>> columns_with_index;
+
   if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
   result.table_name = token.value;
 
-  Table& table = FindTableByName(tables, token.value);
-
   token = lexer_.GetNextToken();
+  if (token.type == TOKEN_LBRACE) {
+    columns_name = ParseColumnsInsert();
+    parse_columns = true;
+    token = lexer_.GetNextToken();
+  }
+
   if (token.value != VALUES) throw SQLError(SYNTAX_ERROR);
 
-  result.rows = ParseRows(table.columns);
 
+  Table& table = FindTableByName(tables, result.table_name);
+  if (parse_columns) {
+    result.columns = columns_with_index.first;
+  } else {
+    result.columns = table.columns;
+    std::for_each(table.columns.begin(), table.columns.end(), [&columns_name](Column& column) {
+      columns_name.push_back(column.name);
+    });
+  }
+  columns_with_index = FindColumnsByName(table.columns, columns_name);
+  result.rows = ParseRows(columns_with_index, table);
   return result;
 }
 
-std::vector<Row> Parser::ParseRows(std::vector<Column>& columns) {
+std::vector<Row> Parser::ParseRows(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table) {
   std::vector<Row> rows;
 
   while (true) {
     Token token = lexer_.GetNextToken();
     if (token.type != TOKEN_LBRACE) throw SQLError(SYNTAX_ERROR);
-    rows.push_back(ParseRow(columns));
+    rows.push_back(ParseRow(columns, table));
 
     token = lexer_.GetNextToken();
 
@@ -167,19 +186,25 @@ std::vector<Row> Parser::ParseRows(std::vector<Column>& columns) {
   }
 }
 
-Row Parser::ParseRow(std::vector<Column>& columns) {
+Row Parser::ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table) {
   int added_values = 0;
   Row row;
-  while (true) {
+  for (int i = 0; i < columns.first.size(); ++i) {
     Token token = lexer_.GetNextToken();
-
-    row.fields.push_back(GetValueOfType(columns[added_values].type, token.value));
+    while (table.columns[added_values].name != columns.first[i].name && added_values < table.columns.size()) {
+      if (VectorContains(table.columns[added_values].attributes, NOT_NULL)) {
+        throw SQLError(COLUMN_IS_NOT_NULL);
+      }
+      row.fields.emplace_back(Null());
+      added_values++;
+    }
+    row.fields.push_back(GetValueOfType(table.columns[added_values].type, token.value));
     added_values++;
 
     token = lexer_.GetNextToken();
     if (token.type == TOKEN_RBRACE) break;
-  }
-  if (added_values != columns.size()) throw SQLError(SYNTAX_ERROR);
+}
+  if (added_values != table.columns.size()) throw SQLError(SYNTAX_ERROR);
 
   return row;
 }
@@ -188,7 +213,7 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
   std::stack<std::vector<Operand>> stack_operand;
   std::stack<ConditionTypes> conditions;
 
-  while (true){
+  while (true) {
     Token token = lexer_.GetNextToken();
     if (token.type == TOKEN_SEMI) break;
     else if (token.type == TOKEN_LBRACE) {
@@ -207,12 +232,10 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
       conditions.push(CONDITION_AND);
     } else if (token.value == "OR") {
       conditions.push(CONDITION_OR);
-    }
-    else if (token.type == TOKEN_KEYWORD) {
+    } else if (token.type == TOKEN_KEYWORD) {
       Operand operand = ParseOperand(token.value);
       stack_operand.push({operand});
-    }
-    else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_MISSED);
+    } else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_MISSED);
   }
 
   while (!conditions.empty()) {
@@ -261,4 +284,18 @@ void Parser::MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& sta
         std::make_move_iterator(second_operand.end())
     );
   }
+}
+std::vector<std::string> Parser::ParseColumnsInsert() {
+  std::vector<std::string> columns_name;
+  while (true) {
+    Token token = lexer_.GetNextToken();
+    if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+    columns_name.push_back(token.value);
+
+    token = lexer_.GetNextToken();
+    if (token.type == TOKEN_RBRACE) break;
+    else if (token.type != TOKEN_COMMA) throw SQLError(SYNTAX_ERROR);
+  }
+
+  return columns_name;
 }

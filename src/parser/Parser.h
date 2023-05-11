@@ -23,9 +23,10 @@ class Parser {
 
  private:
   void ExpectSemicolon();
-  std::vector<Column> ParseColumns();
-  std::vector<Row> ParseRows(std::vector<Column>& columns);
-  Row ParseRow(std::vector<Column>& columns);
+  std::vector<Column> ParseCreateTableColumns();
+  std::vector<Row> ParseRows(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table);
+  std::vector<std::string> ParseColumnsInsert();
+  Row ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table);
 
   void ParseWhereCondition(SelectFromModel& select_from_model);
   static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);

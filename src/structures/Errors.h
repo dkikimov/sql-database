@@ -13,7 +13,8 @@ enum ErrorTypes {
   COLUMN_NOT_FOUND,
   MISMATCHED_DATA_TYPE,
   UNKNOWN_CONDITION,
-  UNKNOWN_COMPARISON_OPERATOR
+  UNKNOWN_COMPARISON_OPERATOR,
+  COLUMN_IS_NOT_NULL
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -34,6 +35,8 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Unknown condition";
     case UNKNOWN_COMPARISON_OPERATOR:
       return "Unknown comparison operator";
+    case COLUMN_IS_NOT_NULL:
+      return "You tried to add a value that has a nullable column, which is not null ";
   }
 };
 
@@ -44,6 +47,11 @@ class SQLError: public std::exception {
   SQLError& operator=(SQLError const&) noexcept = default;
 
   const char* what() const noexcept override { return GetErrorTypeDescription(error_); }
+
+  ErrorTypes GetErrorType() const {
+    return error_;
+  }
+
   explicit SQLError(ErrorTypes error) : error_(error) {}
   ~SQLError() override = default;
  private:

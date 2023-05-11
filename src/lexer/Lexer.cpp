@@ -13,6 +13,7 @@ void Lexer::NextChar() {
     character = contents[i];
   }
 }
+
 void Lexer::SkipWhitespace() {
   while (isspace(character)) {
     NextChar();
@@ -31,7 +32,7 @@ Token Lexer::GetNextToken() {
       return ParseString();
     }
     switch (character) {
-      case '=': SaveCharAndGoNext(TOKEN_EQUALS);
+      case '=': return SaveCharAndGoNext(TOKEN_EQUALS);
       case '<': {
         NextChar();
         if (character == '=') {

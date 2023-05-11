@@ -35,6 +35,27 @@ static DataTypes DataTypeFromString(std::string& string) {
   throw SQLError(UNKNOWN_DATA_TYPE);
 }
 
-typedef std::variant<int, float, bool, std::string, double> possible_data_types;
+struct Null {
+  bool operator==(const Null& rhs) const {
+    return true;
+  }
+  bool operator!=(const Null& rhs) const {
+    return !(rhs == *this);
+  }
+  bool operator<(const Null& rhs) const {
+    return true;
+  }
+  bool operator>(const Null& rhs) const {
+    return rhs < *this;
+  }
+  bool operator<=(const Null& rhs) const {
+    return !(rhs < *this);
+  }
+  bool operator>=(const Null& rhs) const {
+    return !(*this < rhs);
+  }
+};
+
+typedef std::variant<int, float, bool, std::string, double, Null> possible_data_types;
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_DATATYPES_H_

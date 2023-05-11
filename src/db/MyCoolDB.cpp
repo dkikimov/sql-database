@@ -42,6 +42,8 @@ std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
       if (token.value == INTO) {
         InsertIntoModel data = parser.ParseInsertInto(tables_);
         InsertInto(data);
+      } else {
+        throw SQLError(SYNTAX_ERROR);
       }
     } else {
       throw SQLError(SYNTAX_ERROR);

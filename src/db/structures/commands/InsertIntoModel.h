@@ -9,8 +9,9 @@
 #include "../Row.h"
 
 struct InsertIntoModel {
-  std::string table_name;
+  std::vector<Column> columns;
   std::vector<Row> rows;
+  std::string table_name;
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_DB_STRUCTURES_COMMANDS_INSERTINTOMODEL_H_
