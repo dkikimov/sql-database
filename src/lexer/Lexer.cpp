@@ -31,16 +31,39 @@ Token Lexer::GetNextToken() {
       return ParseString();
     }
     switch (character) {
-      case '=': return SaveCharAndGoNext(TOKEN_EQUALS);
+      case '=': SaveCharAndGoNext(TOKEN_EQUALS);
+      case '<': {
+        NextChar();
+        if (character == '=') {
+          NextChar();
+          return {TOKEN_SMALLER_EQUALS, "<="};
+        } else if (isspace(character)) {
+          return {TOKEN_SMALLER, "<"};
+        }
+      }
+      case '!': {
+        NextChar();
+        if (character == '=') {
+          return SaveCharAndGoNext(TOKEN_NOT_EQUALS);
+        }
+      }
       case '(': return SaveCharAndGoNext(TOKEN_LBRACE);
       case ')': return SaveCharAndGoNext(TOKEN_RBRACE);
       case ';': return SaveCharAndGoNext(TOKEN_SEMI);
       case ',': return SaveCharAndGoNext(TOKEN_COMMA);
+      case '>': {
+        NextChar();
+        if (character == '=') {
+          NextChar();
+          return {TOKEN_BIGGER_EQUALS, ">="};
+        } else if (isspace(character)) {
+          return {TOKEN_BIGGER, ">"};
+        }
+      }
     }
     return SaveCharAndGoNext(TOKEN_UNKNOWN);
   }
   return {TOKEN_END, ""};
-//  throw std::runtime_error("Undefined character");
 }
 
 Token Lexer::ParseToken() {
@@ -51,6 +74,7 @@ Token Lexer::ParseToken() {
   }
   return {TOKEN_KEYWORD, token};
 }
+
 Token Lexer::ParseString() {
   std::string token;
 

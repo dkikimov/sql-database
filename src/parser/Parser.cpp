@@ -212,7 +212,7 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
       Operand operand = ParseOperand(token.value);
       stack_operand.push({operand});
     }
-    else if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+    else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_MISSED);
   }
 
   while (!conditions.empty()) {
@@ -229,6 +229,7 @@ Operand Parser::ParseOperand(std::string& field_name) {
   operand.field = field_name;
 
   Token token = lexer_.GetNextToken();
+  //TODO: Parse from token.type, not string
   ComparisonOperator comp_operator = GetComparisonOperatorFromString(token.value);
   if (comp_operator != COMPARISON_IS) {
     operand.comparison_operator = comp_operator;

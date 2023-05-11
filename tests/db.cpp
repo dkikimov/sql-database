@@ -162,3 +162,93 @@ TEST(DB_SelectFrom, WhereCondition_Or_And_2) {
 
   ASSERT_EQ(result[0].rows, expected_rows);
 }
+
+TEST(DB_SelectFrom, WhereCondition_BiggerThan) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id > 0;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_BiggerMoreThan) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id >= 1;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_BiggerMoreThanEmpty) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{};
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id >= 3;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_SmallerThan) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id < 3;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_SmallerEqualsThan) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{
+      Row({1, "toy"}),
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id <= 2;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_SmallerEqualsEmpty) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{};
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id <= 0;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}

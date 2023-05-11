@@ -3,7 +3,7 @@
 //
 
 #include "MyCoolDB.h"
-#include "../structures//Constants.h"
+#include "../structures/Constants.h"
 #include "structures/Table.h"
 #include "../parser/Parser.h"
 #include "./algorithms.cpp"
@@ -74,8 +74,9 @@ QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
     for (auto& operands : select_from.conditions) {
       if (ok) break;
       for (auto& operand : operands) {
-        if (row.fields[columns_index_map[operand.field].second]
-            == GetValueOfType(columns_index_map[operand.field].first.type, operand.value)) {
+        if (CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
+                                         GetValueOfType(columns_index_map[operand.field].first.type, operand.value),
+                                         operand.comparison_operator)) {
           ok = true;
         } else {
           ok = false;
@@ -88,17 +89,19 @@ QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
     }
   }
 
+  if (select_from.conditions.empty()) {
+    rows = table.rows;
+  }
+
   if (select_from.select_all_columns) {
-    if (select_from.conditions.empty()) return {true, table.rows, table.columns};
-    else return {true, rows, table.columns};
+    return {true, rows, table.columns};
   }
 
   auto columns = FindColumnsByName(table.columns, select_from.columns);
 
   std::vector<Row> added_rows;
   added_rows.reserve(rows.size());
-
-  for (Row& row : rows) {
+  for (const Row& row : rows) {
     Row changed_row;
     for (auto column_id : columns.second) {
       changed_row.fields.push_back(row.fields[column_id]);

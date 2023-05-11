@@ -3,6 +3,7 @@
 //
 #include "structures/Column.h"
 #include "structures/Table.h"
+#include "structures/commands/Condition.h"
 
 #include <vector>
 #include <map>
@@ -79,5 +80,31 @@ static Table& FindTableByName(std::vector<Table>& tables, std::string& name) {
   }
 
   return *table_iter;
+}
 
+template <typename T>
+static bool CompareValuesBasedOnOperator(const T& value1, const T& value2, ComparisonOperator comp_operator) {
+  switch (comp_operator) {
+    case COMPARISON_EQUALS:
+      return value1 == value2;
+    case COMPARISON_BIGGER:
+      return value1 > value2;
+    case COMPARISON_BIGGER_EQUALS:
+      return value1 >= value2;
+    case COMPARISON_SMALLER:
+      return value1 < value2;
+    case COMPARISON_SMALLER_EQUALS:
+      return value1 <= value2;
+    case COMPARISON_NOT_EQUALS:
+      return value1 != value2;
+    case COMPARISON_IS:
+      //TODO:
+       return true;
+    case COMPARISON_IS_NULL:
+      //TODO:
+       return true;
+    case COMPARISON_IS_NOT_NULL:
+      //TODO:
+       return true;
+  }
 }
