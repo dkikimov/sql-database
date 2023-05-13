@@ -7,6 +7,7 @@
 
 #include "Errors.h"
 #include <string>
+#include <ostream>
 
 enum DataTypes {
   Int,
@@ -53,6 +54,16 @@ struct Null {
   }
   bool operator>=(const Null& rhs) const {
     return !(*this < rhs);
+  }
+  friend std::ostream& operator<<(std::ostream& os, const Null& null) {
+    os << "Null";
+    return os;
+  }
+
+  friend std::istream &operator>>( std::istream  &input, Null& null ) {
+    std::string a;
+    input >> a;
+    return input;
   }
 };
 

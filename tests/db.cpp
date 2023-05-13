@@ -322,3 +322,17 @@ TEST(DB_ModifyingData, DeleteRowsByCondition) {
   db.ExecuteCommand("DELETE FROM table_name WHERE id = 1;");
   ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
 }
+
+TEST(DB_File, SavingAndReadingFile) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::string path = "/Users/katsushooter/ITMO/programming/labwork-12-KatsuShooter/db.txt";
+  db.Save(path);
+
+  MyCoolDB db_2;
+  db_2.Open(path);
+
+  ASSERT_EQ(db, db_2);
+}

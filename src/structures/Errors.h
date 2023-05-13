@@ -14,7 +14,9 @@ enum ErrorTypes {
   MISMATCHED_DATA_TYPE,
   UNKNOWN_CONDITION,
   UNKNOWN_COMPARISON_OPERATOR,
-  COLUMN_IS_NOT_NULL
+  COLUMN_IS_NOT_NULL,
+  FILE_TO_WRITE_CANT_OPEN,
+  FILE_TO_READ_CANT_OPEN
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -37,6 +39,10 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Unknown comparison operator";
     case COLUMN_IS_NOT_NULL:
       return "You tried to add a value that has a nullable column, which is not null ";
+    case FILE_TO_WRITE_CANT_OPEN:
+      return "The database cannot be saved to the specified file";
+    case FILE_TO_READ_CANT_OPEN:
+      return "The database cannot be read from the specified file";
   }
 };
 
@@ -54,6 +60,24 @@ class SQLError: public std::exception {
 
   explicit SQLError(ErrorTypes error) : error_(error) {}
   ~SQLError() override = default;
+ private:
+  ErrorTypes error_;
+};
+
+class DBError: public std::exception {
+ public:
+  DBError(DBError const&) noexcept = default;
+
+  DBError& operator=(DBError const&) noexcept = default;
+
+  const char* what() const noexcept override { return GetErrorTypeDescription(error_); }
+
+  ErrorTypes GetErrorType() const {
+    return error_;
+  }
+
+  explicit DBError(ErrorTypes error) : error_(error) {}
+  ~DBError() override = default;
  private:
   ErrorTypes error_;
 };

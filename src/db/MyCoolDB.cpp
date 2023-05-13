@@ -157,4 +157,9 @@ void MyCoolDB::SelectRowsByConditionTo(Table& table, ModelWithConditions& model_
     }
   }
 }
-
+bool MyCoolDB::operator==(const MyCoolDB& rhs) const {
+  return tables_ == rhs.tables_;
+}
+bool MyCoolDB::operator!=(const MyCoolDB& rhs) const {
+  return !(rhs == *this);
+}

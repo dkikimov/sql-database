@@ -19,6 +19,11 @@ class MyCoolDB {
 
   std::vector<QueryResult> ExecuteCommand(const char* request);
   const std::vector<Table>& GetTables() const;
+
+  void Save(const std::string& path);
+  void Open(const std::string& path);
+  bool operator==(const MyCoolDB& rhs) const;
+  bool operator!=(const MyCoolDB& rhs) const;
  private:
   std::vector<Table> tables_;
 
