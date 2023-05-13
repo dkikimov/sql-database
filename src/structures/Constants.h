@@ -15,5 +15,6 @@ const auto INSERT = "INSERT";
 const auto INTO = "INTO";
 const auto VALUES = "VALUES";
 const auto WHERE = "WHERE";
+const auto DELETE = "DELETE";
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_

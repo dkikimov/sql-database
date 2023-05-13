@@ -300,3 +300,25 @@ TEST(DB_SelectFrom, WhereCondition_SelectWhereIsNotNull) {
 
   ASSERT_EQ(result[0].rows, expected_rows);
 }
+
+TEST(DB_ModifyingData, DeleteAllRows) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  db.ExecuteCommand("DELETE FROM table_name;");
+  ASSERT_EQ(db.GetTables()[0].rows.size(), 0);
+}
+
+TEST(DB_ModifyingData, DeleteRowsByCondition) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  std::vector<Row> expected_rows{
+      Row({2, "phone"})
+  };
+
+  db.ExecuteCommand("DELETE FROM table_name WHERE id = 1;");
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}

@@ -11,6 +11,7 @@
 #include "structures/Table.h"
 #include "structures/commands/SelectFromModel.h"
 #include "structures/commands/InsertIntoModel.h"
+#include "structures/commands/DeleteFromModel.h"
 
 class MyCoolDB {
  public:
@@ -24,6 +25,8 @@ class MyCoolDB {
   void DropTable(const std::string& table_name);
   QueryResult SelectFrom(SelectFromModel& select_from);
   void InsertInto(InsertIntoModel& insert_into_model);
+  void DeleteFrom(DeleteFromModel& delete_from_model);
+  static void SelectRowsByConditionTo(Table& table, ModelWithConditions& model_with_conditions, std::vector<Row>& rows_to_push);
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_

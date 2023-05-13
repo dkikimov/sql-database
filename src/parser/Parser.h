@@ -9,6 +9,7 @@
 #include "../lexer/Lexer.h"
 #include "../db/structures/commands/SelectFromModel.h"
 #include "../db/structures/commands/InsertIntoModel.h"
+#include "../db/structures/commands/DeleteFromModel.h"
 
 #include <stack>
 
@@ -20,7 +21,7 @@ class Parser {
   std::string ParseDropTable();
   SelectFromModel ParseSelectFrom();
   InsertIntoModel ParseInsertInto(std::vector<Table>& tables);
-
+  DeleteFromModel ParseDelete(std::vector<Table>& tables);
  private:
   void ExpectSemicolon();
   std::vector<Column> ParseCreateTableColumns();
@@ -28,7 +29,7 @@ class Parser {
   std::vector<std::string> ParseColumnsInsert();
   Row ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table);
 
-  void ParseWhereCondition(SelectFromModel& select_from_model);
+  void ParseWhereCondition(ModelWithConditions& model_with_conditions);
   static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);
 
   Operand ParseOperand(std::string& field_name);

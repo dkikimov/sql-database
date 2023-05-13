@@ -45,7 +45,12 @@ std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
       } else {
         throw SQLError(SYNTAX_ERROR);
       }
-    } else {
+    } else if (token.value == DELETE) {
+      DeleteFromModel data = parser.ParseDelete(tables_);
+      DeleteFrom(data);
+    }
+
+    else {
       throw SQLError(SYNTAX_ERROR);
     }
   }
@@ -69,38 +74,7 @@ QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
   Table& table = FindTableByName(tables_, select_from.table_name);
   std::vector<Row> rows;
 
-  auto columns_index_map = GetMapOfColumnsIndexByName(table.columns);
-
-  for (auto& row : table.rows) {
-    bool ok = false;
-    for (auto& operands : select_from.conditions) {
-      if (ok) break;
-      for (auto& operand : operands) {
-        bool matches = false;
-        possible_data_types row_value = row.fields[columns_index_map[operand.field].second];
-        if (operand.comparison_operator == COMPARISON_IS_NULL) {
-          matches = std::holds_alternative<Null>(row_value);
-        } else if (operand.comparison_operator == COMPARISON_IS_NOT_NULL) {
-          matches = !std::holds_alternative<Null>(row_value);
-        } else {
-          possible_data_types value_must_be = GetValueOfType(columns_index_map[operand.field].first.type, operand.value);
-          matches = CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
-                                       value_must_be,
-                                       operand.comparison_operator);
-        }
-
-        if (matches) {
-          ok = true;
-        } else {
-          ok = false;
-          break;
-        }
-      }
-    }
-    if (ok) {
-      rows.push_back(row);
-    }
-  }
+  SelectRowsByConditionTo(table, select_from, rows);
 
   if (select_from.conditions.empty()) {
     rows = table.rows;
@@ -133,5 +107,54 @@ void MyCoolDB::InsertInto(InsertIntoModel& insert_into_model) {
       std::make_move_iterator(insert_into_model.rows.begin()),
       std::make_move_iterator(insert_into_model.rows.end())
   );
+}
+
+void MyCoolDB::DeleteFrom(DeleteFromModel& delete_from_model) {
+  Table& table = FindTableByName(tables_, delete_from_model.table_name);
+
+  if (delete_from_model.delete_all) {
+    return table.rows.clear();
+  }
+
+  std::vector<Row> rows;
+  SelectRowsByConditionTo(table, delete_from_model, rows);
+
+  table.rows.erase(std::remove_if(table.rows.begin(), table.rows.end(), [&](const Row& row) {
+    return std::find(rows.begin(), rows.end(), row) != rows.end();
+  }), table.rows.end());
+}
+
+void MyCoolDB::SelectRowsByConditionTo(Table& table, ModelWithConditions& model_with_conditions, std::vector<Row>& rows_to_push) {
+  auto columns_index_map = GetMapOfColumnsIndexByName(table.columns);
+  for (auto& row : table.rows) {
+    bool ok = false;
+    for (auto& operands : model_with_conditions.conditions) {
+      if (ok) break;
+      for (auto& operand : operands) {
+        bool matches = false;
+        possible_data_types row_value = row.fields[columns_index_map[operand.field].second];
+        if (operand.comparison_operator == COMPARISON_IS_NULL) {
+          matches = std::holds_alternative<Null>(row_value);
+        } else if (operand.comparison_operator == COMPARISON_IS_NOT_NULL) {
+          matches = !std::holds_alternative<Null>(row_value);
+        } else {
+          possible_data_types value_must_be = GetValueOfType(columns_index_map[operand.field].first.type, operand.value);
+          matches = CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
+                                                 value_must_be,
+                                                 operand.comparison_operator);
+        }
+
+        if (matches) {
+          ok = true;
+        } else {
+          ok = false;
+          break;
+        }
+      }
+    }
+    if (ok) {
+      rows_to_push.push_back(row);
+    }
+  }
 }
 

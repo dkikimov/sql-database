@@ -219,7 +219,7 @@ Row Parser::ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& column
   return row;
 }
 
-void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
+void Parser::ParseWhereCondition(ModelWithConditions& model_with_conditions) {
   std::stack<std::vector<Operand>> stack_operand;
   std::stack<ConditionTypes> conditions;
 
@@ -253,7 +253,7 @@ void Parser::ParseWhereCondition(SelectFromModel& select_from_model) {
     conditions.pop();
   }
   while (!stack_operand.empty()) {
-    select_from_model.conditions.push_back(stack_operand.top());
+    model_with_conditions.conditions.push_back(stack_operand.top());
     stack_operand.pop();
   }
 }
@@ -262,22 +262,10 @@ Operand Parser::ParseOperand(std::string& field_name) {
   operand.field = field_name;
 
   Token token = lexer_.GetNextToken();
+
   //TODO: Parse from token.type, not string
   ComparisonOperator comp_operator = GetComparisonOperatorFromString(token.value);
   operand.comparison_operator = comp_operator;
-//  if (comp_operator != COMPARISON_IS) {
-//    operand.comparison_operator = comp_operator;
-//  } else {
-//    std::string previous_value = token.value;
-//    previous_value += " " + lexer_.GetNextToken().value;
-//    try {
-//      comp_operator = GetComparisonOperatorFromString(previous_value);
-//    } catch (std::exception& e) {
-//      previous_value += " " + lexer_.GetNextToken().value;
-//      comp_operator = GetComparisonOperatorFromString(previous_value);
-//    }
-//    operand.comparison_operator = comp_operator;
-//  }
 
   token = lexer_.GetNextToken();
   if (comp_operator == COMPARISON_IS_NOT_NULL || comp_operator == COMPARISON_IS_NULL) {
@@ -314,4 +302,24 @@ std::vector<std::string> Parser::ParseColumnsInsert() {
   }
 
   return columns_name;
+}
+DeleteFromModel Parser::ParseDelete(std::vector<Table>& tables) {
+  DeleteFromModel result;
+  Token token = lexer_.GetNextToken();
+  if (token.value != FROM) throw SQLError(SYNTAX_ERROR);
+
+  token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+
+  result.table_name = token.value;
+  Table& table = FindTableByName(tables, result.table_name);
+
+  token = lexer_.GetNextToken();
+  if (token.type == TOKEN_SEMI) {
+    result.delete_all = true;
+    return result;
+  } else if (token.value != WHERE) throw SQLError(SYNTAX_ERROR);
+
+  ParseWhereCondition(result);
+  return result;
 }
