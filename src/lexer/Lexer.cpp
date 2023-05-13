@@ -3,6 +3,7 @@
 //
 
 #include "Lexer.h"
+#include "../structures/Errors.h"
 Lexer::Lexer(std::string contents) : i(0), contents(contents) {
   character = contents[i];
 }
@@ -25,7 +26,12 @@ Token Lexer::GetNextToken() {
     if (character == '\0') break;
 
     if (isalnum(character) || character == '_') {
-      return ParseToken();
+      Token token = ParseToken();
+      if (token.value == "IS") {
+        return ParseIsStatement();
+      } else {
+        return token;
+      }
     }
 
     if (character == '\'') {
@@ -92,4 +98,20 @@ Token Lexer::SaveCharAndGoNext(TokenTypes token_type) {
   char character_ = character;
   NextChar();
   return {token_type, std::string(1, character_)};
+}
+Token Lexer::ParseIsStatement() {
+  SkipWhitespace();
+  Token token = ParseToken();
+
+  if (character == '\0') throw SQLError(SYNTAX_ERROR);
+  if (token.value == "NULL") {
+    return {TOKEN_IS_NULL, "IS NULL"};
+  } else if (token.value == "NOT"){
+    SkipWhitespace();
+    token = ParseToken();
+    if (token.value == "NULL") {
+      return {TOKEN_IS_NOT_NULL, "IS NOT NULL"};
+    }
+  }
+  throw SQLError(SYNTAX_ERROR);
 }

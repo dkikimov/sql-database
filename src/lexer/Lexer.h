@@ -24,6 +24,7 @@ class Lexer {
   Token ParseToken();
   Token ParseString();
   Token SaveCharAndGoNext(TokenTypes token_type);
+  Token ParseIsStatement();
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_LEXER_LEXER_H_

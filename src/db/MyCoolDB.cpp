@@ -76,9 +76,20 @@ QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
     for (auto& operands : select_from.conditions) {
       if (ok) break;
       for (auto& operand : operands) {
-        if (CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
-                                         GetValueOfType(columns_index_map[operand.field].first.type, operand.value),
-                                         operand.comparison_operator)) {
+        bool matches = false;
+        possible_data_types row_value = row.fields[columns_index_map[operand.field].second];
+        if (operand.comparison_operator == COMPARISON_IS_NULL) {
+          matches = std::holds_alternative<Null>(row_value);
+        } else if (operand.comparison_operator == COMPARISON_IS_NOT_NULL) {
+          matches = !std::holds_alternative<Null>(row_value);
+        } else {
+          possible_data_types value_must_be = GetValueOfType(columns_index_map[operand.field].first.type, operand.value);
+          matches = CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
+                                       value_must_be,
+                                       operand.comparison_operator);
+        }
+
+        if (matches) {
           ok = true;
         } else {
           ok = false;

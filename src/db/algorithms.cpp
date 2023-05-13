@@ -123,14 +123,7 @@ static bool CompareValuesBasedOnOperator(const T& value1, const T& value2, Compa
     case COMPARISON_SMALLER:return value1 < value2;
     case COMPARISON_SMALLER_EQUALS:return value1 <= value2;
     case COMPARISON_NOT_EQUALS:return value1 != value2;
-    case COMPARISON_IS:
-      //TODO:
-      return true;
-    case COMPARISON_IS_NULL:
-      //TODO:
-      return true;
-    case COMPARISON_IS_NOT_NULL:
-      //TODO:
-      return true;
+    case COMPARISON_IS_NULL: return std::is_same<T, Null>::value;
+    case COMPARISON_IS_NOT_NULL: return !std::is_same<T, Null>::value;
   }
 }

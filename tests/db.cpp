@@ -269,3 +269,34 @@ TEST(DB_SelectFrom, WhereCondition_SmallerEqualsEmpty) {
 
   ASSERT_EQ(result[0].rows, expected_rows);
 }
+
+TEST(DB_SelectFrom, WhereCondition_SelectWhereIsNull) {
+  MyCoolDB db = CreateDefaultTable();
+
+  db.ExecuteCommand("INSERT INTO table_name(name) VALUES ('toy');");
+
+  std::vector<Row> expected_rows{
+      Row({Null(), "toy"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id IS NULL;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}
+
+TEST(DB_SelectFrom, WhereCondition_SelectWhereIsNotNull) {
+  MyCoolDB db = CreateDefaultTable();
+
+  db.ExecuteCommand("INSERT INTO table_name(name) VALUES ('toy');");
+  db.ExecuteCommand("INSERT INTO table_name VALUES (2, 'phone');");
+
+  std::vector<Row> expected_rows{
+      Row({2, "phone"})
+  };
+
+  std::vector<QueryResult>
+      result = db.ExecuteCommand("SELECT * FROM table_name WHERE id IS NOT NULL;");
+
+  ASSERT_EQ(result[0].rows, expected_rows);
+}

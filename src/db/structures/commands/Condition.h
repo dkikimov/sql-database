@@ -15,7 +15,6 @@ enum ComparisonOperator {
   COMPARISON_SMALLER,
   COMPARISON_SMALLER_EQUALS,
   COMPARISON_NOT_EQUALS,
-  COMPARISON_IS,
   COMPARISON_IS_NULL,
   COMPARISON_IS_NOT_NULL,
 };
@@ -33,8 +32,6 @@ static ComparisonOperator GetComparisonOperatorFromString(std::string& string) {
     return COMPARISON_SMALLER;
   } else if (string == "<=") {
     return COMPARISON_SMALLER_EQUALS;
-  }  else if (string == "IS") {
-    return COMPARISON_IS;
   } else if (string == "IS NULL") {
     return COMPARISON_IS_NULL;
   } else if (string == "IS NOT NULL") {
