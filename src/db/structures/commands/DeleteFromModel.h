@@ -10,7 +10,6 @@
 #include "./Condition.h"
 
 struct DeleteFromModel: public ModelWithConditions {
-  std::vector<std::vector<Operand>> conditions;
   std::string table_name;
   bool delete_all = false;
 };

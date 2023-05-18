@@ -5,6 +5,7 @@
 #include "Parser.h"
 #include "../structures/Constants.h"
 #include "../db/algorithms.cpp"
+#include "../db/structures/JoinType.h"
 
 #include <stack>
 
@@ -127,9 +128,25 @@ SelectFromModel Parser::ParseSelectFrom() {
 
   token = lexer_.GetNextToken();
   if (token.type == TOKEN_SEMI) return result;
+  if (token.value == INNER || token.value == LEFT || token.value == RIGHT) {
+    JoinType join_type;
+    if (token.value == INNER) join_type = JOIN_INNER;
+    else if (token.value == LEFT) join_type = JOIN_LEFT;
+    else if (token.value == RIGHT) join_type = JOIN_RIGHT;
+
+    token = lexer_.GetNextToken();
+    if (token.value != JOIN) throw SQLError(SYNTAX_ERROR);
+    auto join_model = ParseJoin(result);
+    join_model.first.join_type = join_type;
+
+    token = join_model.second;
+    result.join_model = join_model.first;
+  }
+  if (token.type == TOKEN_SEMI) return result;
+
   if (token.value != WHERE) throw SQLError(SEMI_MISSED);
 
-  ParseWhereCondition(result);
+  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
 
   return result;
 }
@@ -219,13 +236,13 @@ Row Parser::ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& column
   return row;
 }
 
-void Parser::ParseWhereCondition(ModelWithConditions& model_with_conditions) {
+Token Parser::ParseCondition(ModelWithConditions& model_with_conditions) {
   std::stack<std::vector<Operand>> stack_operand;
   std::stack<ConditionTypes> conditions;
 
+  Token token = lexer_.GetNextToken();
   while (true) {
-    Token token = lexer_.GetNextToken();
-    if (token.type == TOKEN_SEMI || token.type == TOKEN_END) break;
+    if (token.type == TOKEN_SEMI || token.value == WHERE) break;
     else if (token.type == TOKEN_LBRACE) {
       conditions.push(CONDITION_BRACE);
     } else if (token.type == TOKEN_RBRACE) {
@@ -246,6 +263,7 @@ void Parser::ParseWhereCondition(ModelWithConditions& model_with_conditions) {
       Operand operand = ParseOperand(token.value);
       stack_operand.push({operand});
     } else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_MISSED);
+    token = lexer_.GetNextToken();
   }
 
   while (!conditions.empty()) {
@@ -256,6 +274,8 @@ void Parser::ParseWhereCondition(ModelWithConditions& model_with_conditions) {
     model_with_conditions.conditions.push_back(stack_operand.top());
     stack_operand.pop();
   }
+
+  return token;
 }
 Operand Parser::ParseOperand(std::string& field_name) {
   Operand operand;
@@ -267,11 +287,13 @@ Operand Parser::ParseOperand(std::string& field_name) {
   ComparisonOperator comp_operator = GetComparisonOperatorFromString(token.value);
   operand.comparison_operator = comp_operator;
 
-  token = lexer_.GetNextToken();
   if (comp_operator == COMPARISON_IS_NOT_NULL || comp_operator == COMPARISON_IS_NULL) {
     operand.value = "";
+    return operand;
   }
-  else if (token.type != TOKEN_KEYWORD && token.type != TOKEN_STRING) throw SQLError(SYNTAX_ERROR);
+
+  token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD && token.type != TOKEN_STRING) throw SQLError(SYNTAX_ERROR);
   else { operand.value = token.value; }
   return operand;
 }
@@ -320,6 +342,32 @@ DeleteFromModel Parser::ParseDelete(std::vector<Table>& tables) {
     return result;
   } else if (token.value != WHERE) throw SQLError(SYNTAX_ERROR);
 
-  ParseWhereCondition(result);
+  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
+
   return result;
 }
+std::pair<JoinModel, Token> Parser::ParseJoin(SelectFromModel& select_from_model) {
+  JoinModel result;
+  Token token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+
+  result.table_to_join = token.value;
+  select_from_model.join = true;
+
+  for (const std::string& column: select_from_model.columns) {
+    result.all_columns.push_back(column);
+    auto splitted_column = SplitStringByDelimiter(column, '.');
+    if (splitted_column.size() != 2) throw SQLError(SYNTAX_ERROR);
+    if (splitted_column[0] == select_from_model.table_name) {
+      result.columns_1.push_back(splitted_column[1]);
+    } else if (splitted_column[0] == result.table_to_join) {
+      result.columns_2.push_back(splitted_column[1]);
+    } else throw SQLError(TOO_MUCH_ARGUMENTS);
+  }
+
+  token = lexer_.GetNextToken();
+  if (token.value != ON) throw SQLError(SYNTAX_ERROR);
+
+  return std::make_pair(result,ParseCondition(result));
+}
+

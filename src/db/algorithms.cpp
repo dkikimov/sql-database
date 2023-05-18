@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <map>
+#include <sstream>
 
 static std::pair<std::vector<Column>, std::vector<size_t>> FindColumnsByName(const std::vector<Column>& columns,
                                                                              const std::vector<std::string>& columns_to_select) {
@@ -28,7 +29,7 @@ static std::pair<std::vector<Column>, std::vector<size_t>> FindColumnsByName(con
 }
 
 // Returns map where key is name and value is a pair of column with this name and it's index.
-static std::map<std::string, std::pair<Column, size_t>> GetMapOfColumnsIndexByName(const std::vector<Column>& columns) {
+static std::map<std::string, std::pair<Column, size_t>> GetColumnsMap(const std::vector<Column>& columns) {
   std::map<std::string, std::pair<Column, size_t>> result;
 
   for (size_t i = 0; i < columns.size(); ++i) {
@@ -38,7 +39,84 @@ static std::map<std::string, std::pair<Column, size_t>> GetMapOfColumnsIndexByNa
   return result;
 }
 
-static possible_data_types GetValueOfType(DataTypes type, std::string& value) {
+
+static std::vector<Column> ConcatenateTwoColumns(const Table& table_1, const Table& table_2) {
+  std::vector<Column> result;
+
+  for (auto column : table_1.columns) {
+    column.name = table_1.name + "." + column.name;
+    result.push_back(column);
+  }
+
+  for (auto column : table_2.columns) {
+    column.name = table_2.name + "." + column.name;
+    result.push_back(column);
+  }
+
+  return result;
+}
+
+//static std::map<std::string, std::pair<Column, size_t>> GetTwoColumnsMapPlusTableName(const Table& table_1, const Table& table_2) {
+//  std::map<std::string, std::pair<Column, size_t>> result;
+//
+//  for (size_t i = 0; i < table_1.columns.size(); ++i) {
+//    result.insert({table_1.name + "." + table_1.columns[i].name, std::make_pair(table_1.columns[i], i)});
+//  }
+//
+//  for (size_t i = 0; i < table_2.columns.size(); ++i) {
+//    result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], i)});
+//  }
+//
+//  return result;
+//}
+
+static std::map<std::string, std::pair<Column, size_t>> GetColumnsMapPlusTableName(const Table& table) {
+  std::map<std::string, std::pair<Column, size_t>> result;
+
+  for (size_t i = 0; i < table.columns.size(); ++i) {
+    result.insert({table.name + "." + table.columns[i].name, std::make_pair(table.columns[i], i)});
+  }
+
+  return result;
+}
+
+static std::map<std::string, std::pair<Column, size_t>> JoinTablesColumns(const Table& table_1, const Table& table_2) {
+  std::map<std::string, std::pair<Column, size_t>> result;
+
+  for (size_t i = 0; i < table_1.columns.size(); ++i) {
+    result.insert({table_1.name + "." + table_1.columns[i].name, std::make_pair(table_1.columns[i], i)});
+  }
+
+  for (size_t i = 0; i < table_2.columns.size(); ++i) {
+      result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], table_1.columns.size() + i)});
+  }
+
+  return result;
+}
+
+//static std::map<std::string, std::pair<Column, size_t>> JoinSelectedTableColumn(const Table& table_1, const Table& table_2,
+//                                                                                                const std::vector<std::string>& columns_1, const std::vector<std::string>& columns_2) {
+//  std::map<std::string, std::pair<Column, size_t>> result;
+//
+//  for (size_t i = 0; i < table_1.columns.size(); ++i) {
+//    if (std::find(columns_1.begin(), columns_1.end(), table_1.columns[i].name)
+//        != columns_1.end()) {
+//      result.insert({table_1.name + "." + table_1.columns[i].name, std::make_pair(table_1.columns[i], i)});
+//    }
+//  }
+//
+//  for (size_t i = 0; i < table_2.columns.size(); ++i) {
+//    if (std::find(columns_2.begin(), columns_2.end(), table_2.columns[i].name)
+//        != columns_2.end()) {
+//      result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], i)});
+//    }
+//  }
+//
+//  return result;
+//}
+
+
+static possible_data_types GetValueOfType(DataTypes type, const std::string& value) {
   std::string lower_value = value;
   switch (type) {
     case Int:
@@ -126,4 +204,29 @@ static bool CompareValuesBasedOnOperator(const T& value1, const T& value2, Compa
     case COMPARISON_IS_NULL: return std::is_same<T, Null>::value;
     case COMPARISON_IS_NOT_NULL: return !std::is_same<T, Null>::value;
   }
+}
+static std::vector<std::string> SplitStringByDelimiter(const std::string& input, char delimiter) {
+  std::vector<std::string> tokens;
+  std::stringstream ss(input);
+  std::string token;
+
+  while (std::getline(ss, token, delimiter)) {
+    tokens.push_back(token);
+  }
+
+  return tokens;
+}
+
+static Row ConcatenateRows(const Row& row_1, const Row& row_2, const Table& table_1, const Table& table_2 ) {
+  Row row;
+
+    for (int i = 0; i < table_1.columns.size(); ++i) {
+        row.fields.push_back(row_1.fields[i]);
+    }
+
+    for (int i = 0; i < table_2.columns.size(); ++i) {
+        row.fields.push_back(row_2.fields[i]);
+    }
+
+  return row;
 }

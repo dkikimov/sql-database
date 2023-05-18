@@ -16,7 +16,8 @@ enum ErrorTypes {
   UNKNOWN_COMPARISON_OPERATOR,
   COLUMN_IS_NOT_NULL,
   FILE_TO_WRITE_CANT_OPEN,
-  FILE_TO_READ_CANT_OPEN
+  FILE_TO_READ_CANT_OPEN,
+  TOO_MUCH_ARGUMENTS
 };
 
 static const char* GetErrorTypeDescription(ErrorTypes error) {
@@ -43,6 +44,8 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "The database cannot be saved to the specified file";
     case FILE_TO_READ_CANT_OPEN:
       return "The database cannot be read from the specified file";
+    case TOO_MUCH_ARGUMENTS:
+      return "You have provided too much arguments";
   }
 };
 

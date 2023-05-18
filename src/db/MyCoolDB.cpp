@@ -48,9 +48,7 @@ std::vector<QueryResult> MyCoolDB::ExecuteCommand(const char* request) {
     } else if (token.value == DELETE) {
       DeleteFromModel data = parser.ParseDelete(tables_);
       DeleteFrom(data);
-    }
-
-    else {
+    } else {
       throw SQLError(SYNTAX_ERROR);
     }
   }
@@ -73,18 +71,38 @@ const std::vector<Table>& MyCoolDB::GetTables() const {
 QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
   Table& table = FindTableByName(tables_, select_from.table_name);
   std::vector<Row> rows;
+  std::pair<std::vector<Column>, std::vector<size_t>> columns;
 
-  SelectRowsByConditionTo(table, select_from, rows);
+  if (select_from.join) {
+    Table& second_table = FindTableByName(tables_, select_from.join_model.table_to_join);
+    columns = FindColumnsByName(ConcatenateTwoColumns(table, second_table), select_from.join_model.all_columns);
 
-  if (select_from.conditions.empty()) {
-    rows = table.rows;
+    std::vector<Row> selected_rows;
+    JoinTablesTo(table, second_table, select_from, selected_rows);
+
+    if (!select_from.join_model.conditions.empty()) {
+      auto joined_columns = JoinTablesColumns(table, second_table);
+      SelectRowsByConditionTo(selected_rows, joined_columns, select_from.conditions, rows);
+    } else {
+      rows = std::move(selected_rows);
+    }
+
   }
 
-  if (select_from.select_all_columns) {
-    return {true, rows, table.columns};
-  }
+  else {
+    columns = FindColumnsByName(table.columns, select_from.columns);
 
-  auto columns = FindColumnsByName(table.columns, select_from.columns);
+    auto columns_map = GetColumnsMap(table.columns);
+    SelectRowsByConditionTo(table.rows, columns_map, select_from.conditions, rows);
+
+    if (select_from.conditions.empty()) {
+      rows = table.rows;
+    }
+
+    if (select_from.select_all_columns) {
+      return {true, rows, table.columns};
+    }
+  }
 
   std::vector<Row> added_rows;
   added_rows.reserve(rows.size());
@@ -117,49 +135,92 @@ void MyCoolDB::DeleteFrom(DeleteFromModel& delete_from_model) {
   }
 
   std::vector<Row> rows;
-  SelectRowsByConditionTo(table, delete_from_model, rows);
+  auto columns = GetColumnsMap(table.columns);
+  SelectRowsByConditionTo(table.rows, columns, delete_from_model.conditions, rows);
 
   table.rows.erase(std::remove_if(table.rows.begin(), table.rows.end(), [&](const Row& row) {
     return std::find(rows.begin(), rows.end(), row) != rows.end();
   }), table.rows.end());
 }
 
-void MyCoolDB::SelectRowsByConditionTo(Table& table, ModelWithConditions& model_with_conditions, std::vector<Row>& rows_to_push) {
-  auto columns_index_map = GetMapOfColumnsIndexByName(table.columns);
-  for (auto& row : table.rows) {
+void MyCoolDB::SelectRowsByConditionTo(const std::vector<Row>& rows,
+                                       std::map<std::string, std::pair<Column, size_t>>& columns,
+                                       const std::vector<std::vector<Operand>>& conditions,
+                                       std::vector<Row>& rows_to_push) {
+  for (auto& row : rows) {
     bool ok = false;
-    for (auto& operands : model_with_conditions.conditions) {
+    for (auto& operands : conditions) {
       if (ok) break;
+      bool matches;
       for (auto& operand : operands) {
-        bool matches = false;
-        possible_data_types row_value = row.fields[columns_index_map[operand.field].second];
+        possible_data_types row_value = row.fields[columns[operand.field].second];
         if (operand.comparison_operator == COMPARISON_IS_NULL) {
           matches = std::holds_alternative<Null>(row_value);
         } else if (operand.comparison_operator == COMPARISON_IS_NOT_NULL) {
           matches = !std::holds_alternative<Null>(row_value);
         } else {
-          possible_data_types value_must_be = GetValueOfType(columns_index_map[operand.field].first.type, operand.value);
-          matches = CompareValuesBasedOnOperator(row.fields[columns_index_map[operand.field].second],
+          possible_data_types
+              value_must_be = GetValueOfType(columns[operand.field].first.type, operand.value);
+          matches = CompareValuesBasedOnOperator(row.fields[columns[operand.field].second],
                                                  value_must_be,
                                                  operand.comparison_operator);
         }
 
-        if (matches) {
-          ok = true;
-        } else {
+        if (!matches) {
           ok = false;
           break;
         }
       }
+      if (matches) ok = true;
     }
     if (ok) {
       rows_to_push.push_back(row);
     }
   }
 }
+
 bool MyCoolDB::operator==(const MyCoolDB& rhs) const {
   return tables_ == rhs.tables_;
 }
 bool MyCoolDB::operator!=(const MyCoolDB& rhs) const {
   return !(rhs == *this);
+}
+void MyCoolDB::JoinTablesTo(Table& table_1, Table& table_2, SelectFromModel& select_from, std::vector<Row>& rows) {
+  auto columns_index_map = GetColumnsMapPlusTableName(table_1);
+  auto columns_to_join_index_map = GetColumnsMapPlusTableName(table_2);
+
+  for (const Row& row : table_1.rows) {
+    for (const Row& row_to_join : table_2.rows) {
+      bool ok = false;
+      for (const auto& operands : select_from.join_model.conditions) {
+        if (ok) break;
+        bool matches;
+        for (auto& operand : operands) {
+          possible_data_types row_value = row.fields[columns_index_map[operand.field].second];
+          if (operand.comparison_operator == COMPARISON_IS_NULL) {
+            matches = std::holds_alternative<Null>(row_value);
+          } else if (operand.comparison_operator == COMPARISON_IS_NOT_NULL) {
+            matches = !std::holds_alternative<Null>(row_value);
+          } else {
+            possible_data_types row_to_join_value = row_to_join.fields[columns_to_join_index_map[operand.field].second];
+            matches = CompareValuesBasedOnOperator(row_value,
+                                                   row_to_join_value,
+                                                   operand.comparison_operator);
+          }
+          if (!matches) {
+            ok = false;
+            break;
+          }
+        }
+        if (matches) ok = true;
+      }
+      if (ok) {
+        rows.push_back(ConcatenateRows(row,
+                                       row_to_join,
+                                       table_1,
+                                       table_2));
+      }
+    }
+  }
+
 }

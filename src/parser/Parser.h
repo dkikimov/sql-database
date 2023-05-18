@@ -10,6 +10,7 @@
 #include "../db/structures/commands/SelectFromModel.h"
 #include "../db/structures/commands/InsertIntoModel.h"
 #include "../db/structures/commands/DeleteFromModel.h"
+#include "../db/structures/commands/JoinModel.h"
 
 #include <stack>
 
@@ -22,6 +23,7 @@ class Parser {
   SelectFromModel ParseSelectFrom();
   InsertIntoModel ParseInsertInto(std::vector<Table>& tables);
   DeleteFromModel ParseDelete(std::vector<Table>& tables);
+
  private:
   void ExpectSemicolon();
   std::vector<Column> ParseCreateTableColumns();
@@ -29,7 +31,9 @@ class Parser {
   std::vector<std::string> ParseColumnsInsert();
   Row ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table);
 
-  void ParseWhereCondition(ModelWithConditions& model_with_conditions);
+  std::pair<JoinModel, Token> ParseJoin(SelectFromModel& select_from_model);
+
+  Token ParseCondition(ModelWithConditions& model_with_conditions);
   static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);
 
   Operand ParseOperand(std::string& field_name);

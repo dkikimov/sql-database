@@ -16,5 +16,10 @@ const auto INTO = "INTO";
 const auto VALUES = "VALUES";
 const auto WHERE = "WHERE";
 const auto DELETE = "DELETE";
+const auto INNER = "INNER";
+const auto LEFT = "LEFT";
+const auto RIGHT = "RIGHT";
+const auto JOIN = "JOIN";
+const auto ON = "ON";
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_

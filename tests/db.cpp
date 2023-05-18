@@ -336,3 +336,56 @@ TEST(DB_File, SavingAndReadingFile) {
 
   ASSERT_EQ(db, db_2);
 }
+
+TEST(DB_Joins, InnerJoin) {
+  MyCoolDB db;
+
+  db.ExecuteCommand("CREATE TABLE items (id INT PRIMARY KEY, name VARCHAR NOT NULL);");
+  db.ExecuteCommand("INSERT INTO items VALUES (1, 'toy'), (2, 'phone');");
+
+  db.ExecuteCommand("CREATE TABLE items_price (id INT PRIMARY KEY, item_id INT, price INT);");
+  db.ExecuteCommand("INSERT INTO items_price VALUES (1, 1, 2000), (2, 2, 2500);");
+
+  auto res = db.ExecuteCommand("SELECT items.name, items_price.item_id, items_price.price FROM items INNER JOIN items_price ON items.id = items_price.item_id;");
+
+  std::vector<Row> expected_rows{
+      Row({"toy", 1, 2000}),
+      Row({"phone", 2, 2500}),
+  };
+
+  ASSERT_EQ(res[0].rows, expected_rows);
+
+  std::vector<Column> expected_columns{
+    Column({"items.name"}, {NOT_NULL}, Varchar),
+    Column({"items_price.item_id"}, {}, Int),
+    Column({"items_price.price"}, {}, Int),
+  };
+
+  ASSERT_EQ(expected_columns, res[0].columns);
+}
+
+TEST(DB_Joins, InnerJoinWhereCondition) {
+  MyCoolDB db;
+
+  db.ExecuteCommand("CREATE TABLE items (id INT PRIMARY KEY, name VARCHAR NOT NULL);");
+  db.ExecuteCommand("INSERT INTO items VALUES (1, 'toy'), (2, 'phone');");
+
+  db.ExecuteCommand("CREATE TABLE items_price (id INT PRIMARY KEY, item_id INT, price INT);");
+  db.ExecuteCommand("INSERT INTO items_price VALUES (1, 1, 2000), (2, 2, 2500);");
+
+  auto res = db.ExecuteCommand("SELECT items.name, items_price.item_id, items_price.price FROM items INNER JOIN items_price ON items.id = items_price.item_id WHERE items.id = 1;");
+
+  std::vector<Row> expected_rows{
+      Row({"toy", 1, 2000}),
+  };
+
+  ASSERT_EQ(res[0].rows, expected_rows);
+
+  std::vector<Column> expected_columns{
+      Column({"items.name"}, {NOT_NULL}, Varchar),
+      Column({"items_price.item_id"}, {}, Int),
+      Column({"items_price.price"}, {}, Int),
+  };
+
+  ASSERT_EQ(expected_columns, res[0].columns);
+}

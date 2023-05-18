@@ -75,7 +75,7 @@ Token Lexer::GetNextToken() {
 
 Token Lexer::ParseToken() {
   std::string token;
-  while (isalnum(character) || character == '_') {
+  while (isalnum(character) || character == '_' || character == '.') {
     token += character;
     NextChar();
   }
