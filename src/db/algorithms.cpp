@@ -39,8 +39,7 @@ static std::map<std::string, std::pair<Column, size_t>> GetColumnsMap(const std:
   return result;
 }
 
-
-static std::vector<Column> ConcatenateTwoColumns(const Table& table_1, const Table& table_2) {
+static std::vector<Column> ConcatenateTableTwoColumnsWithPrefix(const Table& table_1, const Table& table_2) {
   std::vector<Column> result;
 
   for (auto column : table_1.columns) {
@@ -80,7 +79,7 @@ static std::map<std::string, std::pair<Column, size_t>> GetColumnsMapPlusTableNa
   return result;
 }
 
-static std::map<std::string, std::pair<Column, size_t>> JoinTablesColumns(const Table& table_1, const Table& table_2) {
+static std::map<std::string, std::pair<Column, size_t>> GetMapOfTablesColumns(const Table& table_1, const Table& table_2) {
   std::map<std::string, std::pair<Column, size_t>> result;
 
   for (size_t i = 0; i < table_1.columns.size(); ++i) {
@@ -88,12 +87,23 @@ static std::map<std::string, std::pair<Column, size_t>> JoinTablesColumns(const 
   }
 
   for (size_t i = 0; i < table_2.columns.size(); ++i) {
-      result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], table_1.columns.size() + i)});
+    result.insert({table_2.name + "." + table_2.columns[i].name,
+                   std::make_pair(table_2.columns[i], table_1.columns.size() + i)});
   }
 
   return result;
 }
 
+static std::vector<std::string> GetNamesOfColumnsWithPrefix(const std::vector<Column>& columns,
+                                                            const std::string& prefix) {
+  std::vector<std::string> result;
+
+  result.reserve(columns.size());
+  for (const Column& column : columns) {
+    result.push_back(prefix + "." + column.name);
+  }
+  return result;
+}
 //static std::map<std::string, std::pair<Column, size_t>> JoinSelectedTableColumn(const Table& table_1, const Table& table_2,
 //                                                                                                const std::vector<std::string>& columns_1, const std::vector<std::string>& columns_2) {
 //  std::map<std::string, std::pair<Column, size_t>> result;
@@ -185,11 +195,18 @@ static Table& FindTableByName(std::vector<Table>& tables, std::string& name) {
   return *table_iter;
 }
 
-template <typename T>
+template<typename T>
 static bool VectorContains(const std::vector<T>& vec, const T& value) {
   auto itr = std::find(vec.begin(), vec.end(), value);
   if (std::end(vec) == itr) return false;
   return true;
+}
+
+template<typename T>
+static std::vector<T> ConcatenateVectors(const std::vector<T>& vec_1, const std::vector<T>& vec_2) {
+  std::vector<T> vec(vec_1);
+  vec.insert(vec.end(), vec_2.begin(), vec_2.end());
+  return vec;
 }
 
 template<typename T>
@@ -217,16 +234,26 @@ static std::vector<std::string> SplitStringByDelimiter(const std::string& input,
   return tokens;
 }
 
-static Row ConcatenateRows(const Row& row_1, const Row& row_2, const Table& table_1, const Table& table_2 ) {
+static Row ConcatenateRows(const Row& row_1, const Row& row_2, const Table& table_1, const Table& table_2) {
   Row row;
 
-    for (int i = 0; i < table_1.columns.size(); ++i) {
-        row.fields.push_back(row_1.fields[i]);
-    }
+  for (int i = 0; i < table_1.columns.size(); ++i) {
+    row.fields.push_back(row_1.fields[i]);
+  }
 
-    for (int i = 0; i < table_2.columns.size(); ++i) {
-        row.fields.push_back(row_2.fields[i]);
-    }
+  for (int i = 0; i < table_2.columns.size(); ++i) {
+    row.fields.push_back(row_2.fields[i]);
+  }
 
   return row;
+}
+
+static std::vector<std::string> AddPrefixToStrings(const std::vector<std::string>& strings, const std::string& prefix) {
+  std::vector<std::string> res;
+
+  res.reserve(strings.size());
+  for (const auto& string : strings) {
+    res.push_back(prefix + "." + string);
+  }
+  return res;
 }

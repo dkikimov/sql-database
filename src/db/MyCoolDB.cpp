@@ -75,13 +75,23 @@ QueryResult MyCoolDB::SelectFrom(SelectFromModel& select_from) {
 
   if (select_from.join) {
     Table& second_table = FindTableByName(tables_, select_from.join_model.table_to_join);
-    columns = FindColumnsByName(ConcatenateTwoColumns(table, second_table), select_from.join_model.all_columns);
+    switch (select_from.join_model.join_type) {
+      case JOIN_LEFT:
+        columns = FindColumnsByName(ConcatenateTableTwoColumnsWithPrefix(table, second_table), ConcatenateVectors(GetNamesOfColumnsWithPrefix(table.columns, table.name), AddPrefixToStrings(select_from.join_model.columns_2, second_table.name)));
+        break;
+      case JOIN_RIGHT:
+        columns = FindColumnsByName(ConcatenateTableTwoColumnsWithPrefix(table, second_table), ConcatenateVectors(AddPrefixToStrings(select_from.join_model.columns_1, table.name), GetNamesOfColumnsWithPrefix(second_table.columns, second_table.name)));
+        break;
+      case JOIN_INNER:
+        columns = FindColumnsByName(ConcatenateTableTwoColumnsWithPrefix(table, second_table), select_from.join_model.all_columns);
+        break;
+    }
 
     std::vector<Row> selected_rows;
     JoinTablesTo(table, second_table, select_from, selected_rows);
 
-    if (!select_from.join_model.conditions.empty()) {
-      auto joined_columns = JoinTablesColumns(table, second_table);
+    if (!select_from.conditions.empty()) {
+      auto joined_columns = GetMapOfTablesColumns(table, second_table);
       SelectRowsByConditionTo(selected_rows, joined_columns, select_from.conditions, rows);
     } else {
       rows = std::move(selected_rows);

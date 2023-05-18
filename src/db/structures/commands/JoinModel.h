@@ -8,6 +8,7 @@
 #include "../Column.h"
 #include "BaseModels.h"
 #include "../JoinType.h"
+
 #include <string>
 
 struct JoinModel: public ModelWithConditions {
