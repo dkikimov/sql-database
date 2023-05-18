@@ -7,7 +7,7 @@
 
 #include "./Condition.h"
 
-class ModelWithConditions {
+class WhereCondition {
  public:
   std::vector<std::vector<Operand>> conditions;
 };

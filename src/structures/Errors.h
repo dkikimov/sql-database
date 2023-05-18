@@ -7,7 +7,7 @@
 
 enum ErrorTypes {
   SYNTAX_ERROR,
-  SEMI_MISSED,
+  SEMI_EXPECTED,
   UNKNOWN_DATA_TYPE,
   TABLE_NOT_FOUND,
   COLUMN_NOT_FOUND,
@@ -28,7 +28,7 @@ static const char* GetErrorTypeDescription(ErrorTypes error) {
       return "Unknown data type";
     case TABLE_NOT_FOUND:
       return "Table not found";
-    case SEMI_MISSED:
+    case SEMI_EXPECTED:
       return "Semicolon expected";
     case COLUMN_NOT_FOUND:
       return "Column not found";

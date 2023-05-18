@@ -6,6 +6,7 @@
 #include "../structures/Constants.h"
 #include "../db/algorithms.cpp"
 #include "../db/structures/JoinType.h"
+#include "../db/structures/commands/UpdateModel.h"
 
 #include <stack>
 
@@ -100,7 +101,7 @@ std::string Parser::ParseDropTable() {
 
 void Parser::ExpectSemicolon() {
   Token token = lexer_.GetNextToken();
-  if (token.type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
+  if (token.type != TOKEN_SEMI) throw SQLError(SEMI_EXPECTED);
 }
 
 SelectFromModel Parser::ParseSelectFrom() {
@@ -144,9 +145,41 @@ SelectFromModel Parser::ParseSelectFrom() {
   }
   if (token.type == TOKEN_SEMI) return result;
 
-  if (token.value != WHERE) throw SQLError(SEMI_MISSED);
+  if (token.value != WHERE) throw SQLError(SEMI_EXPECTED);
 
-  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
+  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_EXPECTED);
+
+  return result;
+}
+
+UpdateModel Parser::ParseUpdate() {
+  UpdateModel result;
+
+  Token token = lexer_.GetNextToken();
+  if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+  result.table_name = token.value;
+
+  token = lexer_.GetNextToken();
+  if (token.value != SET) throw SQLError(SYNTAX_ERROR);
+
+  while (true) {
+    token = lexer_.GetNextToken();
+    if (token.type != TOKEN_KEYWORD) throw SQLError(SYNTAX_ERROR);
+    result.update_values.push_back(ParseOperand(token.value));
+
+    token = lexer_.GetNextToken();
+    if (token.type != TOKEN_COMMA) break;
+  }
+
+  if (token.type == TOKEN_SEMI) {
+    result.update_all = true;
+    return result;
+  }
+
+  if (token.value != WHERE) throw SQLError(SYNTAX_ERROR);
+
+  token = ParseCondition(result);
+  if (token.type != TOKEN_SEMI) throw SQLError(SEMI_EXPECTED);
 
   return result;
 }
@@ -175,9 +208,7 @@ InsertIntoModel Parser::ParseInsertInto(std::vector<Table>& tables) {
 
   Table& table = FindTableByName(tables, result.table_name);
   if (parse_columns) {
-    result.columns = columns_with_index.first;
   } else {
-    result.columns = table.columns;
     std::for_each(table.columns.begin(), table.columns.end(), [&columns_name](Column& column) {
       columns_name.push_back(column.name);
     });
@@ -236,7 +267,7 @@ Row Parser::ParseRow(std::pair<std::vector<Column>, std::vector<size_t>>& column
   return row;
 }
 
-Token Parser::ParseCondition(ModelWithConditions& model_with_conditions) {
+Token Parser::ParseCondition(WhereCondition& model_with_conditions) {
   std::stack<std::vector<Operand>> stack_operand;
   std::stack<ConditionTypes> conditions;
 
@@ -262,7 +293,7 @@ Token Parser::ParseCondition(ModelWithConditions& model_with_conditions) {
     } else if (token.type == TOKEN_KEYWORD) {
       Operand operand = ParseOperand(token.value);
       stack_operand.push({operand});
-    } else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_MISSED);
+    } else if (token.type != TOKEN_KEYWORD) throw SQLError(SEMI_EXPECTED);
     token = lexer_.GetNextToken();
   }
 
@@ -297,6 +328,7 @@ Operand Parser::ParseOperand(std::string& field_name) {
   else { operand.value = token.value; }
   return operand;
 }
+
 void Parser::MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition) {
   if (condition == CONDITION_OR) return;
   if (condition == CONDITION_AND) {
@@ -311,6 +343,7 @@ void Parser::MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& sta
     );
   }
 }
+
 std::vector<std::string> Parser::ParseColumnsInsert() {
   std::vector<std::string> columns_name;
   while (true) {
@@ -342,7 +375,7 @@ DeleteFromModel Parser::ParseDelete(std::vector<Table>& tables) {
     return result;
   } else if (token.value != WHERE) throw SQLError(SYNTAX_ERROR);
 
-  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_MISSED);
+  if (ParseCondition(result).type != TOKEN_SEMI) throw SQLError(SEMI_EXPECTED);
 
   return result;
 }

@@ -11,7 +11,7 @@
 #include "BaseModels.h"
 #include "JoinModel.h"
 
-struct SelectFromModel: public ModelWithConditions{
+struct SelectFromModel: public WhereCondition{
   bool select_all_columns = false;
   bool join = false;
   std::vector<std::string> columns;

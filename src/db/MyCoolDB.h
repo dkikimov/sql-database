@@ -11,6 +11,7 @@
 #include "structures/commands/SelectFromModel.h"
 #include "structures/commands/InsertIntoModel.h"
 #include "structures/commands/DeleteFromModel.h"
+#include "structures/commands/UpdateModel.h"
 
 #include <vector>
 #include <map>
@@ -33,12 +34,18 @@ class MyCoolDB {
   QueryResult SelectFrom(SelectFromModel& select_from);
   void InsertInto(InsertIntoModel& insert_into_model);
   void DeleteFrom(DeleteFromModel& delete_from_model);
+  void Update(UpdateModel& update_model);
   static void JoinTablesTo(Table& table_1, Table& table_2, SelectFromModel& select_from, std::vector<Row>& rows);
 
   static void SelectRowsByConditionTo(const std::vector<Row>& rows,
                                std::map<std::string, std::pair<Column, size_t>>& columns,
                                const std::vector<std::vector<Operand>>& conditions,
                                std::vector<Row>& rows_to_push);
+  static void UpdateSelectedRows(std::vector<Row>& rows,
+                                 std::map<std::string, std::pair<Column, size_t>>& columns,
+                                 const std::vector<std::vector<Operand>>& conditions,
+                                 const UpdateModel& update_model);
+
 };
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_MYCOOLDB_H_

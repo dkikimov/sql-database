@@ -9,7 +9,6 @@
 #include "../Row.h"
 
 struct InsertIntoModel {
-  std::vector<Column> columns;
   std::vector<Row> rows;
   std::string table_name;
 };

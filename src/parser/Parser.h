@@ -11,6 +11,7 @@
 #include "../db/structures/commands/InsertIntoModel.h"
 #include "../db/structures/commands/DeleteFromModel.h"
 #include "../db/structures/commands/JoinModel.h"
+#include "../db/structures/commands/UpdateModel.h"
 
 #include <stack>
 
@@ -22,6 +23,7 @@ class Parser {
   std::string ParseDropTable();
   SelectFromModel ParseSelectFrom();
   InsertIntoModel ParseInsertInto(std::vector<Table>& tables);
+  UpdateModel ParseUpdate();
   DeleteFromModel ParseDelete(std::vector<Table>& tables);
 
  private:
@@ -33,7 +35,7 @@ class Parser {
 
   std::pair<JoinModel, Token> ParseJoin(SelectFromModel& select_from_model);
 
-  Token ParseCondition(ModelWithConditions& model_with_conditions);
+  Token ParseCondition(WhereCondition& model_with_conditions);
   static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);
 
   Operand ParseOperand(std::string& field_name);

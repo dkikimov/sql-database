@@ -21,5 +21,8 @@ const auto LEFT = "LEFT";
 const auto RIGHT = "RIGHT";
 const auto JOIN = "JOIN";
 const auto ON = "ON";
+const auto UPDATE = "UPDATE";
+const auto SET = "SET";
+
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_

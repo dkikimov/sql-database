@@ -323,6 +323,48 @@ TEST(DB_ModifyingData, DeleteRowsByCondition) {
   ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
 }
 
+TEST(DB_ModifyingData, UpdateRows) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  db.ExecuteCommand("UPDATE table_name SET name = 'car';");
+
+  std::vector<Row> expected_rows {
+      Row({1, "car"}),
+      Row({2, "car"})
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}
+
+TEST(DB_ModifyingData, UpdateRowsWhereCondition) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  db.ExecuteCommand("UPDATE table_name SET name = 'car' WHERE id = 1;");
+
+  std::vector<Row> expected_rows {
+      Row({1, "car"}),
+      Row({2, "phone"})
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}
+
+TEST(DB_ModifyingData, UpdateMultipleColumnsWhereCondition) {
+  MyCoolDB db = CreateDefaultTable();
+
+  InsertMultipleValuesIntoTable(db);
+
+  db.ExecuteCommand("UPDATE table_name SET name = 'car', id = 3 WHERE id = 1;");
+
+  std::vector<Row> expected_rows {
+      Row({3, "car"}),
+      Row({2, "phone"})
+  };
+  ASSERT_EQ(db.GetTables()[0].rows, expected_rows);
+}
+
 TEST(DB_File, SavingAndReadingFile) {
   MyCoolDB db = CreateDefaultTable();
 
