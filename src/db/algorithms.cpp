@@ -79,7 +79,8 @@ static std::map<std::string, std::pair<Column, size_t>> GetColumnsMapPlusTableNa
   return result;
 }
 
-static std::map<std::string, std::pair<Column, size_t>> GetMapOfTablesColumns(const Table& table_1, const Table& table_2) {
+static std::map<std::string, std::pair<Column, size_t>> GetMapOfTablesColumns(const Table& table_1,
+                                                                              const Table& table_2) {
   std::map<std::string, std::pair<Column, size_t>> result;
 
   for (size_t i = 0; i < table_1.columns.size(); ++i) {
@@ -104,27 +105,6 @@ static std::vector<std::string> GetNamesOfColumnsWithPrefix(const std::vector<Co
   }
   return result;
 }
-//static std::map<std::string, std::pair<Column, size_t>> JoinSelectedTableColumn(const Table& table_1, const Table& table_2,
-//                                                                                                const std::vector<std::string>& columns_1, const std::vector<std::string>& columns_2) {
-//  std::map<std::string, std::pair<Column, size_t>> result;
-//
-//  for (size_t i = 0; i < table_1.columns.size(); ++i) {
-//    if (std::find(columns_1.begin(), columns_1.end(), table_1.columns[i].name)
-//        != columns_1.end()) {
-//      result.insert({table_1.name + "." + table_1.columns[i].name, std::make_pair(table_1.columns[i], i)});
-//    }
-//  }
-//
-//  for (size_t i = 0; i < table_2.columns.size(); ++i) {
-//    if (std::find(columns_2.begin(), columns_2.end(), table_2.columns[i].name)
-//        != columns_2.end()) {
-//      result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], i)});
-//    }
-//  }
-//
-//  return result;
-//}
-
 
 static possible_data_types GetValueOfType(DataTypes type, const std::string& value) {
   std::string lower_value = value;
@@ -157,31 +137,6 @@ static possible_data_types GetValueOfType(DataTypes type, const std::string& val
       }
     case Varchar:return value;
   }
-}
-
-static DataTypes GetTypeOfValue(std::string& value) noexcept {
-  try {
-    std::stoi(value);
-    return Int;
-  } catch (std::exception& e) {}
-
-  try {
-    std::string lower_value = value;
-    std::transform(lower_value.begin(), lower_value.end(), lower_value.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-    if (lower_value == "true" || lower_value == "false") return Bool;
-  } catch (std::exception& e) {}
-
-  try {
-    std::stof(value);
-    return Float;
-  } catch (std::exception& e) {}
-
-  try {
-    std::stod(value);
-    return Double;
-  } catch (std::exception& e) {}
-  return Varchar;
 }
 
 static Table& FindTableByName(std::vector<Table>& tables, std::string& name) {
@@ -249,11 +204,11 @@ static Row ConcatenateRows(const Row& row_1, const Row& row_2, const Table& tabl
 }
 
 static std::vector<std::string> AddPrefixToStrings(const std::vector<std::string>& strings, const std::string& prefix) {
-  std::vector<std::string> res;
+  std::vector<std::string> res(strings);
 
   res.reserve(strings.size());
-  for (const auto& string : strings) {
-    res.push_back(prefix + "." + string);
+  for (auto& string : res) {
+    string.insert(0, prefix + ".");
   }
   return res;
 }
