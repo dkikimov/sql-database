@@ -49,18 +49,6 @@ enum ConditionTypes {
   CONDITION_BRACE
 };
 
-static ConditionTypes GetConditionFromString(std::string& string) {
-  if (string == "AND") {
-    return CONDITION_AND;
-  } else if (string == "OR") {
-    return CONDITION_OR;
-  }
-
-  else {
-    throw SQLError(UNKNOWN_CONDITION);
-  }
-}
-
 struct Operand {
   std::string field;
   std::string value;

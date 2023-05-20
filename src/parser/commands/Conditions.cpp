@@ -19,13 +19,13 @@ Token Parser::ParseCondition(WhereCondition& model_with_conditions) {
         conditions.pop();
       }
       conditions.pop();
-    } else if (token.value == "AND") {
+    } else if (token.value == AND || token.value == ",") {
       while (!conditions.empty() && conditions.top() == CONDITION_OR) {
         MergeOperandsBasedOnCondition(stack_operand, conditions.top());
         conditions.pop();
       }
       conditions.push(CONDITION_AND);
-    } else if (token.value == "OR") {
+    } else if (token.value == OR) {
       conditions.push(CONDITION_OR);
     } else if (token.type == TOKEN_KEYWORD) {
       Operand operand = ParseOperand(token.value);

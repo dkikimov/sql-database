@@ -23,6 +23,8 @@ const auto JOIN = "JOIN";
 const auto ON = "ON";
 const auto UPDATE = "UPDATE";
 const auto SET = "SET";
+const auto AND = "AND";
+const auto OR = "OR";
 
 
 #endif //LABWORK_12_KATSUSHOOTER_SRC_CONSTANTS_H_
