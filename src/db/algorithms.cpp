@@ -55,20 +55,6 @@ static std::vector<Column> ConcatenateTableTwoColumnsWithPrefix(const Table& tab
   return result;
 }
 
-//static std::map<std::string, std::pair<Column, size_t>> GetTwoColumnsMapPlusTableName(const Table& table_1, const Table& table_2) {
-//  std::map<std::string, std::pair<Column, size_t>> result;
-//
-//  for (size_t i = 0; i < table_1.columns.size(); ++i) {
-//    result.insert({table_1.name + "." + table_1.columns[i].name, std::make_pair(table_1.columns[i], i)});
-//  }
-//
-//  for (size_t i = 0; i < table_2.columns.size(); ++i) {
-//    result.insert({table_2.name + "." + table_2.columns[i].name, std::make_pair(table_2.columns[i], i)});
-//  }
-//
-//  return result;
-//}
-
 static std::map<std::string, std::pair<Column, size_t>> GetColumnsMapPlusTableName(const Table& table) {
   std::map<std::string, std::pair<Column, size_t>> result;
 

@@ -27,7 +27,6 @@ class Parser {
   DeleteFromModel ParseDelete(std::vector<Table>& tables);
 
  private:
-  void ExpectSemicolon();
   std::vector<Column> ParseCreateTableColumns();
   std::vector<Row> ParseRows(std::pair<std::vector<Column>, std::vector<size_t>>& columns, Table& table);
   std::vector<std::string> ParseColumnsInsert();
@@ -39,7 +38,6 @@ class Parser {
   static void MergeOperandsBasedOnCondition(std::stack<std::vector<Operand>>& stack_operand, ConditionTypes& condition);
 
   Operand ParseOperand(std::string& field_name);
-
 
   Lexer& lexer_;
 };
