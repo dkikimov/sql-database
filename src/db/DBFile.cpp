@@ -21,8 +21,14 @@ void MyCoolDB::Save(const std::string& path) {
     }
 
     for (const Row& row : table.rows) {
-      for (const auto& field : row.fields) {
-        std::visit([&file](const auto& elem) { file << elem << ' '; }, field);
+      for (int i = 0; i < row.fields.size(); ++i) {
+        std::visit([&file, &table, &i](const auto& elem) {
+          if (table.columns[i].type == Varchar) {
+            file << "'" << elem << "'" << ' ';
+          } else {
+            file << elem << ' ';
+          }
+        }, row.fields[i]);
       }
       file << '\n';
     }
@@ -65,7 +71,21 @@ void MyCoolDB::Open(const std::string& path) {
       row.fields.reserve(columns_size);
       for (int k = 0; k < columns_size; ++k) {
         std::string value;
-        file >> value;
+        char character = '\0';
+        if (table.columns[k].type) {
+          file >> std::ws;
+          int apostrophe_count = 0;
+          while (apostrophe_count != 2) {
+            file.get(character);
+            value += character;
+            if (character == '\'') {
+              ++apostrophe_count;
+            }
+          }
+          value = value.substr(1, value.size() - 2);
+        } else {
+          file >> value;
+        }
         if (value == "Null") {
           row.fields.emplace_back(Null());
         } else {

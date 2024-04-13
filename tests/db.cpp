@@ -379,6 +379,20 @@ TEST(DB_File, SavingAndReadingFile) {
   ASSERT_EQ(db, db_2);
 }
 
+TEST(DB_File, SavingAndReadingFile_2) {
+  MyCoolDB db = CreateDefaultTable();
+
+  db.ExecuteCommand("INSERT INTO table_name VALUES (1, 'hello world'), (2, 'goodbye world');");
+
+  std::string path = "/Users/katsushooter/ITMO/programming/labwork-12-KatsuShooter/db.txt";
+  db.Save(path);
+
+  MyCoolDB db_2;
+  db_2.Open(path);
+
+  ASSERT_EQ(db, db_2);
+}
+
 TEST(DB_Joins, InnerJoin) {
   MyCoolDB db;
 
@@ -571,11 +585,13 @@ TEST(DB_Joins, RightJoinMultipleConditions) {
   db.ExecuteCommand("INSERT INTO items VALUES (1, 'toy'), (2, 'phone');");
 
   db.ExecuteCommand("CREATE TABLE items_price (id INT PRIMARY KEY, item_id INT, price INT);");
-  db.ExecuteCommand("INSERT INTO items_price VALUES (1, 1, 2000), (2, 2, 2500);");
+  db.ExecuteCommand("INSERT INTO items_price VALUES (3, 1, 2000), (2, 2, 2500);");
 
   auto res = db.ExecuteCommand("SELECT items.name, items_price.item_id, items_price.price FROM items RIGHT JOIN items_price ON items.id = items_price.item_id, items.id = items_price.id;");
 
-  std::vector<Row> expected_rows{};
+  std::vector<Row> expected_rows{
+      Row({"phone", 2, 2, 2500}),
+  };
 
   ASSERT_EQ(res[0].rows, expected_rows);
 
